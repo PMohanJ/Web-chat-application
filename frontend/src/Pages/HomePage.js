@@ -1,6 +1,8 @@
 import React from 'react'
 import {Container, Box, Text} from "@chakra-ui/react";
 import {Tabs, TabList, Tab, TabPanels, TabPanel} from "@chakra-ui/react";
+import Login from "../components/authentication/Login"
+import Signup from "../components/authentication/Signup"
 
 const HomePage = () => {
   return (
@@ -13,7 +15,7 @@ const HomePage = () => {
         fontSize="4xl"
         background="#cacfcc"
         margin="0 40px 20px 40px"
-        borderRadius="0 0 10px 10px"
+        borderRadius="40px 40px 10px 10px"
         boxShadow="0 5px 10px gray "
       >
         <Text color="white" fontWeight="bold">Chat App</Text>
@@ -32,10 +34,10 @@ const HomePage = () => {
           </TabList>
           <TabPanels>
             <TabPanel>
-              
+              <Login/>
             </TabPanel>
             <TabPanel>
-              
+              <Signup/>
             </TabPanel>
           </TabPanels>
         </Tabs>
