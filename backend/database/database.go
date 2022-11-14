@@ -11,7 +11,10 @@ import (
 	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
-func DBinstance() *mongo.Client {
+// Clinet variable holds db instance and is accessable to other files
+var Client *mongo.Client
+
+func DBinstance() {
 	err := godotenv.Load(".env")
 	if err != nil {
 		log.Fatal("Error loading env variables ", err)
@@ -30,8 +33,5 @@ func DBinstance() *mongo.Client {
 	}
 	log.Println("connected to MongoDB!")
 
-	return client
+	Client = client
 }
-
-// Clinet variable holds db instance and is accessable to other files
-var Client *mongo.Client = DBinstance()
