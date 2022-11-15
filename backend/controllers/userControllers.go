@@ -9,11 +9,13 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/pmohanj/web-chat-app/database"
+	"github.com/pmohanj/web-chat-app/helpers"
 	"github.com/pmohanj/web-chat-app/models"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
 )
 
+// RegisterUser will register the new users to application
 func RegisterUser() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		var user models.User
@@ -39,7 +41,7 @@ func RegisterUser() gin.HandlerFunc {
 		// If user doesn't exist, the following returns ErrNoDocuments
 		err := userCollection.FindOne(ctx, bson.M{"email": user.Email}).Decode(&temp)
 
-		// if err is other than ErrNoDocuments
+		// if err is other than ErrNoDocuments, something wrong while querying
 		if err != nil && errors.Is(errors.Unwrap(err), mongo.ErrNoDocuments) {
 			c.JSON(http.StatusInternalServerError, gin.H{"error": "err occured while checking for user"})
 			log.Panic(err)
@@ -51,6 +53,9 @@ func RegisterUser() gin.HandlerFunc {
 		}
 
 		// user doesn't exist in database, so register
+		hashedPassowrd := helpers.HashPassowrd(user.Password)
+		user.Password = hashedPassowrd
+
 		_, err = userCollection.InsertOne(ctx, user)
 		if err != nil {
 			c.JSON(http.StatusInternalServerError, gin.H{"error": "err occured while registering the user"})
