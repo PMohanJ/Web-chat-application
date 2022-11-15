@@ -1,10 +1,17 @@
 package models
 
-import "go.mongodb.org/mongo-driver/bson/primitive"
+import (
+	"time"
+
+	"go.mongodb.org/mongo-driver/bson/primitive"
+)
 
 type Chat struct {
-	Id          primitive.ObjectID   `bson:"_id"`
-	IsGroupChat bool                 `bson:"isGroupChat"`
-	Users       []primitive.ObjectID `bson:"users"`
-	ChatName    string               `bson:"chatName"`
+	Id            primitive.ObjectID   `json:"_id,omitempty" bson:"_id"`
+	IsGroupChat   bool                 `json:"isGroupChat" bson:"isGroupChat"` // should default to false
+	Users         []primitive.ObjectID `json:"users" bson:"users"`
+	LatestMessage primitive.ObjectID   `json:"latestMessage" bson:"latestMessage"`
+	GroupAdmin    primitive.ObjectID   `json:"groupAdmin" bson:"groupAdmin"`
+	Created_at    time.Time            `json:"created_at" bson:"created_at"`
+	Updated_at    time.Time            `json:"updated_at" bson:"updated_at"`
 }
