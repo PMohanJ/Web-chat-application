@@ -32,17 +32,17 @@ func RegisterUser() gin.HandlerFunc {
 		var ctx, cancel = context.WithTimeout(context.Background(), 30*time.Second)
 		defer cancel()
 
-		// check if user is already resgistered
-		database.DBinstance()
-		dbClient := database.Client
-		userCollection := dbClient.Database("cluster0").Collection("user")
+		// get the collection to perform query
+		userCollection := database.OpenCollection(database.Client, "user")
 
+		// check if user is already resgistered
 		var temp models.User
+
 		// If user doesn't exist, the following returns ErrNoDocuments
 		err := userCollection.FindOne(ctx, bson.M{"email": user.Email}).Decode(&temp)
 
 		// if err is other than ErrNoDocuments, something wrong while querying
-		if err != nil && errors.Is(errors.Unwrap(err), mongo.ErrNoDocuments) {
+		if err != nil && !errors.Is(err, mongo.ErrNoDocuments) {
 			c.JSON(http.StatusInternalServerError, gin.H{"error": "err occured while checking for user"})
 			log.Panic(err)
 		}
@@ -82,15 +82,13 @@ func AuthUser() gin.HandlerFunc {
 		ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
 		defer cancel()
 
-		database.DBinstance()
-		dbClient := database.Client
-		userCollection := dbClient.Database("cluster0").Collection("user")
-
+		// get the collection to perform query
+		userCollection := database.OpenCollection(database.Client, "user")
 		var registeredUser models.User
 
 		// check if user is a registered user
 		err := userCollection.FindOne(ctx, bson.M{"email": user.Email}).Decode(&registeredUser)
-		if errors.Is(errors.Unwrap(err), mongo.ErrNoDocuments) {
+		if err != nil && errors.Is(err, mongo.ErrNoDocuments) {
 			c.JSON(http.StatusNotFound, gin.H{"error": "User not registered"})
 			return
 		} else if err != nil {
