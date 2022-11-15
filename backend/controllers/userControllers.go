@@ -66,3 +66,46 @@ func RegisterUser() gin.HandlerFunc {
 
 	}
 }
+
+func AuthUser() gin.HandlerFunc {
+	return func(c *gin.Context) {
+
+		// should use other stuct as user login credential only containe email, pass...
+		// will modify later
+		var user models.User
+		if err := c.BindJSON(&user); err != nil {
+			c.JSON(http.StatusBadRequest, gin.H{"error": "Err while decoing data"})
+			log.Printf("See the data: %+v", err)
+			return
+		}
+
+		ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
+		defer cancel()
+
+		database.DBinstance()
+		dbClient := database.Client
+		userCollection := dbClient.Database("cluster0").Collection("user")
+
+		var registeredUser models.User
+
+		// check if user is a registered user
+		err := userCollection.FindOne(ctx, bson.M{"email": user.Email}).Decode(&registeredUser)
+		if errors.Is(errors.Unwrap(err), mongo.ErrNoDocuments) {
+			c.JSON(http.StatusNotFound, gin.H{"error": "User not registered"})
+			return
+		} else if err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{"error": "error while checking for user data"})
+			log.Panic(err)
+		}
+
+		// user exist, check password validation
+		errMsg, valid := helpers.VerifyPassword(registeredUser.Password, user.Password)
+		if !valid {
+			c.JSON(http.StatusUnauthorized, gin.H{"error": errMsg})
+			return
+		}
+
+		// user is authorized
+		c.JSON(http.StatusOK, gin.H{"Msg": "Login successful"})
+	}
+}
