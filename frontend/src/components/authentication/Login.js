@@ -1,20 +1,79 @@
 import React, { useState } from 'react'
-import { FormControl, FormLabel, FormHelperText, VStack,Input, InputGroup, InputRightElement, Button } from '@chakra-ui/react'
+import { FormControl, FormLabel, VStack,Input, InputGroup, InputRightElement, Button } from '@chakra-ui/react'
+import { useToast } from '@chakra-ui/react'
+import axios from "axios"
+import { useNavigate } from "react-router-dom"
 
 const Login = () => {
   const [show, setShow] = useState(false);
-  const handleClick = () => setShow(!show);
-  const [email, setEmail] = useState();
-  const [password, setPassword] = useState();
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+
   const [loading, setLoading] = useState(false);
+  const handleClick = () => setShow(!show);
+  const toast = useToast();
+  const navigate = useNavigate();
 
-  function submitHandler(){
+  const submitHandler = async() => {
+    setLoading(true);
 
+    if (!email || !password){
+      toast({
+        title: "Please fill all details",
+        status: "warning",
+        isClosable: true,
+        position: "bottom",
+        duration: 4000,
+      });
+      setLoading(false);
+      return;
+    } 
+
+    console.log(email, password)
+
+    try {
+      // make a post request to backend with user credentials
+      const { data } = await axios.post(
+        "http://localhost:8000/api/user/login", 
+        {  
+          email:email, 
+          password: password
+        },
+        {
+          headers: {
+            "Content-Type":"application/json",
+          }
+        }
+      );
+      
+      console.log(data);
+      toast({
+        title: "Login Successful",
+        status: "success",
+        duration: 4000,
+        isClosable: true,
+        position: "top",
+      });
+
+      setLoading(false);
+      navigate("/chat");
+
+    } catch (error) {
+      toast({
+        title: "Error Occured!",
+        description: error.response.data.error,
+        status: "error",
+        duration: 5000,
+        isClosable: true,
+        position: "bottom",
+      });
+      setLoading(false);
+    }
   }
 
   return (
     <VStack spacing="10px">
-      <FormControl id="email" isRequired>
+      <FormControl id="email2" isRequired>
         <FormLabel>Email Address</FormLabel>
         <Input
           value={email}
@@ -24,14 +83,14 @@ const Login = () => {
         />
       </FormControl>
 
-      <FormControl id="password" isRequired>
+      <FormControl id="password2" isRequired>
         <FormLabel>Password</FormLabel>
         <InputGroup size="md">
           <Input
             value={password}
-            onChange={(e) => setPassword(e.target.value)}
             type={show ? "text" : "password"}
             placeholder="Enter password"
+            onChange={(e) => setPassword(e.target.value)}
           />
           <InputRightElement width="4.5rem">
             <Button h="1.75rem" size="sm" onClick={handleClick}>
