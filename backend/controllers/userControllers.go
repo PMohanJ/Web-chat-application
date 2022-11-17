@@ -108,3 +108,47 @@ func AuthUser() gin.HandlerFunc {
 		c.JSON(http.StatusOK, registeredUser)
 	}
 }
+
+func SearchUsers() gin.HandlerFunc {
+	return func(c *gin.Context) {
+		query := c.Query("search")
+		log.Println(query)
+
+		ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
+		defer cancel()
+
+		// get the user collection
+		userCollection := database.OpenCollection(database.Client, "user")
+		filter := bson.D{
+			{"$or",
+				bson.A{
+					bson.D{{"name", bson.D{{"$regex", query}}}},
+					bson.D{{"email", bson.D{{"$regex", query}}}},
+				},
+			},
+		}
+
+		cursor, err := userCollection.Find(ctx, filter)
+		if err != nil && errors.Is(err, mongo.ErrNoDocuments) {
+			c.JSON(http.StatusNotFound, gin.H{"error": "err while checking for users"})
+			return
+		}
+
+		var results []models.UserResponse
+		for cursor.Next(ctx) {
+			var temp models.UserResponse
+			if err := cursor.Decode(&temp); err != nil {
+				c.JSON(http.StatusInternalServerError, gin.H{"error": "error iterating cursor"})
+				log.Panic("error iterating cursor")
+			}
+			results = append(results, temp)
+		}
+
+		for _, result := range results {
+			log.Printf("%+v", result)
+		}
+
+		c.JSON(http.StatusOK, results)
+
+	}
+}
