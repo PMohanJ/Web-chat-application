@@ -76,6 +76,8 @@ const Signup = () => {
         position: "top",
       });
 
+      // storing user details in localstorage
+      localStorage.setItem("userInfo", JSON.stringify(data));
       setLoading(false);
       navigate("/chat");
 
