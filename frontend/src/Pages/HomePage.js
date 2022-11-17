@@ -3,8 +3,17 @@ import {Container, Box, Text} from "@chakra-ui/react";
 import {Tabs, TabList, Tab, TabPanels, TabPanel} from "@chakra-ui/react";
 import Login from "../components/authentication/Login"
 import Signup from "../components/authentication/Signup"
+import { ChatState } from '../context/ChatProvider';
+import { useNavigate } from 'react-router-dom';
 
 const HomePage = () => {
+  const {user, } = ChatState();
+  const navigate = useNavigate();
+
+  if(user){
+    navigate("/chat")
+  }
+
   return (
     <Container maxW="xl"  centerContent>
       <Box 
