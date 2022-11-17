@@ -84,7 +84,7 @@ func AuthUser() gin.HandlerFunc {
 
 		// get the collection to perform query
 		userCollection := database.OpenCollection(database.Client, "user")
-		var registeredUser models.User
+		var registeredUser models.UserResponse
 
 		// check if user is a registered user
 		err := userCollection.FindOne(ctx, bson.M{"email": user.Email}).Decode(&registeredUser)
@@ -96,6 +96,7 @@ func AuthUser() gin.HandlerFunc {
 			log.Panic(err)
 		}
 
+		log.Printf("UserResp form backed %+v", registeredUser)
 		// user exist, check password validation
 		errMsg, valid := helpers.VerifyPassword(registeredUser.Password, user.Password)
 		if !valid {
@@ -104,6 +105,6 @@ func AuthUser() gin.HandlerFunc {
 		}
 
 		// user is authorized
-		c.JSON(http.StatusOK, gin.H{"Msg": "Login successful"})
+		c.JSON(http.StatusOK, registeredUser)
 	}
 }
