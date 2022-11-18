@@ -15,17 +15,52 @@ const SideDrawer = () => {
   const [search, setSearch] = useState("")
   const [searchResults, setSearchResults] = useState([]);
   const [loading, setLoading] = useState(false);
+  const { isOpen, onOpen, onClose } = useDisclosure()
   const navigate = useNavigate();
   const toast = useToast();
-  const { isOpen, onOpen, onClose } = useDisclosure()
 
-  const {user, } = ChatState();
+  const {user, setSelectedChat, chats, setChats} = ChatState();
 
   const handleLogout = () => {
     localStorage.removeItem("userInfo");
     navigate('/')
   }
 
+  // get the selected user chats 
+  const getSelectedUserChat = async(userId)=> {
+    try {
+      setLoading(true);
+
+      const {data} = await axios.post(
+        "http://localhost:8000/api/chat/",
+        {
+          addingUser: user._id,
+          userToBeAdded: userId
+        },
+        {
+          headers:{
+            "Content-Type": "application/json"
+          }
+        }
+      )
+      setLoading(false);
+      setSelectedChat(data)
+      console.log(data);
+      onClose();
+
+    } catch (error){
+        toast({
+          title: "Error while adding users",
+          duration: 5000,
+          isClosable: true,
+          position: "bottom-left",
+          status: "error"
+        });
+        setLoading(false);
+    }
+  }
+
+  // Search for the user by given name or email
   const handleSearch = async() => {
     if (!search){
       toast({
@@ -145,14 +180,12 @@ const SideDrawer = () => {
             </Box>
             
             {searchResults? searchResults.map((item) =>(
-                <UserSearchProfile key={Math.random()} user={item} />
+                <UserSearchProfile key={item._id} user={item} handleOnSelectedUser={() => getSelectedUserChat(item._id)}/>
             )):{}}
            
           </DrawerBody>
         </DrawerContent>
       </Drawer>
-
-        
     </div>
   )
 }
