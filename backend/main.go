@@ -17,6 +17,7 @@ func main() {
 	r.Use(cors.Default())
 	api := r.Group("/api")
 	routes.AddUserRoutes(api)
+	routes.AddChatRoutes(api)
 
 	r.Run(":8000")
 }
