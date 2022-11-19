@@ -18,11 +18,12 @@ type User struct {
 }
 
 type UserResponse struct {
-	Name     string `json:"name"`
-	Email    string `json:"email"`
-	Password string `json:"-"`
-	Pic      string `json:"pic"`
-	IsAdmin  bool   `json:"-"`
+	Id       primitive.ObjectID `json:"_id" bson:"_id"`
+	Name     string             `json:"name" bson:"name"`
+	Email    string             `json:"email" bson:"email"`
+	Password string             `json:"-"`
+	Pic      string             `json:"pic" bson:"pic"`
+	IsAdmin  bool               `json:"-"`
 }
 
 func (u *User) SetDefaultPic() {

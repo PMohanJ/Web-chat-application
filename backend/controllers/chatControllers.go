@@ -16,7 +16,7 @@ import (
 )
 
 // AddChatUser lets the user to add a user to chat with
-func AddChatUser() gin.HandlerFunc {
+func AddOChatUser() gin.HandlerFunc {
 	return func(c *gin.Context) {
 
 		var ids map[string]interface{}
@@ -58,7 +58,44 @@ func AddChatUser() gin.HandlerFunc {
 		var existedChat models.Chat
 		err = chatCollection.FindOne(ctx, filter).Decode(&existedChat)
 		if err == nil {
-			c.JSON(http.StatusOK, existedChat)
+			// chat exist, perform aggragrate operations to join document of Chat with respectice chat Users profile
+			matchStage := bson.D{
+				{
+					"$match", bson.D{{"isGroupChat", false},
+						{"$and",
+							bson.A{
+								bson.D{{"users", bson.D{{"$elemMatch", bson.D{{"$eq", addingUser}}}}}},
+								bson.D{{"users", bson.D{{"$elemMatch", bson.D{{"$eq", userToBeAdded}}}}}},
+							}}},
+				},
+			}
+			lookupStage := bson.D{
+				{
+					"$lookup", bson.D{{"from", "user"}, {"localField", "users"}, {"foreignField", "_id"}, {"as", "users"}},
+				},
+			}
+
+			projectStage := bson.D{
+				{
+					"$project", bson.D{
+						{"users.password", 0}, {"users.isAdmin", 0}, {"created_at", 0}, {"updated_at", 0}, {"users.created_at", 0}, {"users.updated_at", 0},
+					},
+				},
+			}
+			var res []bson.M
+			cur, err := chatCollection.Aggregate(ctx, mongo.Pipeline{matchStage, lookupStage, projectStage})
+			if err != nil {
+				log.Panic(err)
+			}
+
+			if err = cur.All(ctx, &res); err != nil {
+				log.Panic(err)
+			}
+			for _, docu := range res {
+				log.Printf("docu: %+v", docu)
+			}
+
+			c.JSON(http.StatusOK, res)
 			return
 		} else if errors.Is(err, mongo.ErrNoDocuments) {
 			log.Println("Panic...., no docs")
