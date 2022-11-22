@@ -8,4 +8,5 @@ import (
 func AddChatRoutes(r *gin.RouterGroup) {
 	chat := r.Group("/chat")
 	chat.POST("/", controllers.AddOChatUser())
+	chat.GET("/:userId", controllers.GetUserChats())
 }

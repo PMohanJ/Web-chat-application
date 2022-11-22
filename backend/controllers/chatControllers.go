@@ -130,3 +130,68 @@ func AddOChatUser() gin.HandlerFunc {
 		c.JSON(http.StatusOK, insertedChat)
 	}
 }
+
+func GetUserChats() gin.HandlerFunc {
+	return func(c *gin.Context) {
+		id := c.Param("userId")
+
+		userId, err := primitive.ObjectIDFromHex(id)
+		if err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{"error": "Error while converting hex to objId"})
+		}
+		// get chat collection
+		chatCollection := database.OpenCollection(database.Client, "chat")
+
+		matchStage := bson.D{
+			{
+				"$match", bson.D{
+					{
+						"users", bson.D{{"$elemMatch", bson.D{{"$eq", userId}}}},
+					},
+				},
+			},
+		}
+
+		lookupStage := bson.D{
+			{
+				"$lookup", bson.D{
+					{"from", "user"},
+					{"localField", "users"},
+					{"foreignField", "_id"},
+					{"as", "users"},
+				},
+			},
+		}
+
+		projectStage := bson.D{
+			{
+				"$project", bson.D{
+					{"users.password", 0},
+					{"created_at", 0},
+					{"updated_at", 0},
+					{"users.created_at", 0},
+					{"users.updated_at", 0},
+				},
+			},
+		}
+
+		ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
+		defer cancel()
+
+		cursor, err := chatCollection.Aggregate(ctx, mongo.Pipeline{matchStage, lookupStage, projectStage})
+		if err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{"error": "Error checking documents"})
+			log.Panic(err)
+		}
+
+		var results []bson.M
+		if err := cursor.All(ctx, &results); err != nil {
+			log.Panic(err)
+		}
+		for _, docu := range results {
+			log.Println(docu)
+		}
+
+		c.JSON(http.StatusOK, results)
+	}
+}
