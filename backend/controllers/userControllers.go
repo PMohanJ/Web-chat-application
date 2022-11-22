@@ -12,6 +12,7 @@ import (
 	"github.com/pmohanj/web-chat-app/helpers"
 	"github.com/pmohanj/web-chat-app/models"
 	"go.mongodb.org/mongo-driver/bson"
+	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
 )
 
@@ -56,13 +57,14 @@ func RegisterUser() gin.HandlerFunc {
 		hashedPassowrd := helpers.HashPassowrd(user.Password)
 		user.Password = hashedPassowrd
 
-		_, err = userCollection.InsertOne(ctx, user)
+		insId, err := userCollection.InsertOne(ctx, user)
 		if err != nil {
 			c.JSON(http.StatusInternalServerError, gin.H{"error": "err occured while registering the user"})
 			log.Panic(err)
-		} else {
-			c.JSON(http.StatusOK, user)
 		}
+
+		user.Id = insId.InsertedID.(primitive.ObjectID)
+		c.JSON(http.StatusOK, user)
 
 	}
 }
