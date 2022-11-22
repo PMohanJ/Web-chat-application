@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { useEffect } from 'react'
 import {Container, Box, Text} from "@chakra-ui/react";
 import {Tabs, TabList, Tab, TabPanels, TabPanel} from "@chakra-ui/react";
 import Login from "../components/authentication/Login"
@@ -10,9 +10,12 @@ const HomePage = () => {
   const {user, } = ChatState();
   const navigate = useNavigate();
 
-  if(user){
-    navigate("/chat")
-  }
+  useEffect(() => {
+    if(user){
+      navigate("/chat")
+    }
+  }, [])
+  
 
   return (
     <Container maxW="xl"  centerContent>
