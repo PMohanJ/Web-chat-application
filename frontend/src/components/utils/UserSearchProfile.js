@@ -1,21 +1,33 @@
 import React from 'react';
-import {Box, Image} from '@chakra-ui/react';
+import {Avatar, Box, Text} from '@chakra-ui/react';
 
 
-const UserSearchProfile = ({user}) => {
+const UserSearchProfile = ({user, handleOnSelectedUser}) => {
   return (
     <div>
       <Box 
-        backgroundColor={"#ede7d8"}
+        display={"flex"} 
+        flexDir="row"
+        justifyContent="space-between"
+        bg={"#ede7d8"}
         mb="10px"
         borderRadius={"8px"}
         p={"5px"}
+        onClick={handleOnSelectedUser}
+        _hover={{background:"blue.200", color:"white"}}
+        color="black"
       >
-        <Box display={"flex"} justifyContent="space-between">
+        <Box >
+          <Text fontSize="xl" color={"black"}>
           {user.name} 
-          <Image width={"30px"} borderRadius="full" src={user.pic}/>
+          </Text>
+          
+          <Text color={"blackAlpha.700"}>
+            Email: {user.email}
+          </Text>
         </Box>
-        {user.email}
+
+        <Avatar size={"md"} src={user.pic}/>
             
         </Box>
     </div>
