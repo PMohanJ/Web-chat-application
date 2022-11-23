@@ -4,6 +4,7 @@ import React, { useEffect } from 'react'
 import { ChatState } from '../../context/ChatProvider';
 import { useState } from 'react';
 import axios from "axios"
+import GroupChatModel from '../utils/GroupChatModel';
 
 const MyChats = () => {
   const [loggedUser, setLoggedUser] = useState();
@@ -62,15 +63,17 @@ const MyChats = () => {
 
       >
         <Text>Chats</Text>
-        <Button
-          display="flex"
-          rightIcon={<AddIcon/>}
-          fontFamily="-moz-initial"
-          fontWeight="semibold"
-          >
-           Create a Group
-            
+
+        <GroupChatModel>
+          <Button
+            display="flex"
+            rightIcon={<AddIcon/>}
+            fontFamily="-moz-initial"
+            fontWeight="semibold"
+            >
+            Create a Group
           </Button>
+        </GroupChatModel>
       </Box>
 
       {chats? (
