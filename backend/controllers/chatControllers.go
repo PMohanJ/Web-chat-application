@@ -195,3 +195,61 @@ func GetUserChats() gin.HandlerFunc {
 		c.JSON(http.StatusOK, results)
 	}
 }
+
+func CreateGroupChat() gin.HandlerFunc {
+	return func(c *gin.Context) {
+		var groupData map[string]interface{}
+
+		if err := c.BindJSON(&groupData); err != nil {
+			c.JSON(http.StatusBadRequest, gin.H{"error": "Error while parsing data"})
+			log.Panic(err)
+		}
+
+		groupName := groupData["groupName"].(string)
+
+		// assuming that the admin user id is sent separately as JWT is not implemented yet,
+		// we can't exactly distinguish between normal and admin user
+		users := groupData["users"].([]interface{})
+		aUser := groupData["adminUser"].(string)
+
+		var usersIds []primitive.ObjectID
+		adminUser, err := primitive.ObjectIDFromHex(aUser)
+		if err != nil {
+			log.Panic(err)
+		}
+		usersIds = append(usersIds, adminUser)
+
+		for _, uId := range users {
+			id := uId.(string)
+
+			temp, err := primitive.ObjectIDFromHex(id)
+			if err != nil {
+				log.Panic(err)
+			}
+			usersIds = append(usersIds, temp)
+		}
+
+		groupChat := models.Chat{
+			IsGroupChat: true,
+			ChatName:    groupName,
+			Users:       usersIds,
+			GroupAdmin:  adminUser,
+		}
+
+		ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
+		defer cancel()
+		// get the chat collection
+		chatCollection := database.OpenCollection(database.Client, "chat")
+
+		insId, err := chatCollection.InsertOne(ctx, groupChat)
+		if err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{"error": "err while inserting document"})
+			log.Panic(insId)
+		}
+
+		insertedId := insId.InsertedID.(primitive.ObjectID)
+		groupChat.Id = insertedId
+
+		c.JSON(http.StatusOK, groupChat)
+	}
+}
