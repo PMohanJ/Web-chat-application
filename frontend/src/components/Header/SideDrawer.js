@@ -180,7 +180,7 @@ const SideDrawer = () => {
             </Box>
             
             {searchResults? searchResults.map((item) =>(
-                <UserSearchProfile key={item._id} user={item} handleOnSelectedUser={() => getSelectedUserChat(item._id)}/>
+                <UserSearchProfile key={item._id} user={item} handleFunction={() => getSelectedUserChat(item._id)}/>
             )):{}}
            
           </DrawerBody>

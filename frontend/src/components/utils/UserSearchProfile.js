@@ -2,7 +2,7 @@ import React from 'react';
 import {Avatar, Box, Text} from '@chakra-ui/react';
 
 
-const UserSearchProfile = ({user, handleOnSelectedUser}) => {
+const UserSearchProfile = ({user, handleFunction}) => {
   return (
     <div>
       <Box 
@@ -13,7 +13,7 @@ const UserSearchProfile = ({user, handleOnSelectedUser}) => {
         mb="10px"
         borderRadius={"8px"}
         p={"5px"}
-        onClick={handleOnSelectedUser}
+        onClick={handleFunction}
         _hover={{background:"blue.200", color:"white"}}
         color="black"
       >
