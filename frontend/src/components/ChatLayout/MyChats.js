@@ -6,7 +6,7 @@ import { useState } from 'react';
 import axios from "axios"
 import GroupChatModel from '../utils/GroupChatModel';
 
-const MyChats = () => {
+const MyChats = ({fetchChat}) => {
   const [loggedUser, setLoggedUser] = useState();
   const {selectedChat, setSelectedChat, user, chats, setChats} = ChatState();
   const toast = useToast();
@@ -35,7 +35,7 @@ const MyChats = () => {
 
   useEffect(() => {
     fetchChats();
-  },[])
+  },[fetchChat])
 
   function getSenderName(chat) {
     if (chat.users[0]._id === user._id) 
