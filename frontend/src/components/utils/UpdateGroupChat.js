@@ -1,5 +1,5 @@
-import React, { useEffect, useState } from 'react'
-import { Modal, ModalOverlay, ModalContent, ModalHeader, ModalFooter, ModalBody, ModalCloseButton, useDisclosure, VStack} from '@chakra-ui/react'
+import React, { useState } from 'react'
+import { Modal, ModalOverlay, ModalContent, ModalHeader, ModalFooter, ModalBody, ModalCloseButton, useDisclosure } from '@chakra-ui/react'
 import { FormControl, Input, Button, Box, useToast, Spinner, Stack} from '@chakra-ui/react'
 import { ChatState } from '../../context/ChatProvider'
 import UserBadge from './UserBadge'
@@ -11,12 +11,55 @@ const UpdateGroupChat = ({user, children}) => {
   const { isOpen, onOpen, onClose } = useDisclosure();
   const [selectedUsers, setSelectedUsers] = useState([]);
   const [groupName, setGroupName] = useState("");
-  const { selectedChat } = ChatState();
+  const { selectedChat, setSelectedChat } = ChatState();
   const [loading, setLoading] = useState(false);
   const [searchResults, setSearchResults] = useState([]);
 
   const toast = useToast();
   
+  const handleGroupRename = async() => {
+
+    if (groupName.trim() === "") {
+      toast({
+        title: "Please trype a name",
+        isClosable: true,
+        duration: 4000,
+        status: "warning",
+      });
+      return;
+    }
+
+    try {
+      setLoading(true);
+      
+      const { data } = await axios.put("http://localhost:8000/api/chat/grouprename",
+        {
+          chatId: selectedChat._id,
+          groupName: groupName,
+        },
+        {
+          headers:{
+            "Content-Type": "application/json",
+          }
+        }
+      )
+      console.log(data)
+      setLoading(false);
+      const updatedSelectedChat = JSON.parse(JSON.stringify(selectedChat));
+      updatedSelectedChat.chatName = data.updatedGroupName;
+      setSelectedChat(updatedSelectedChat)
+    } catch (error) {
+        toast({
+          title: "Error occured",
+          decreption: "Failed to load user data",
+          duration: 3000,
+          status: "warning",
+          isClosable: true,
+          position: "bottom-left",
+        });
+        setLoading(false);
+    }
+  }
   const handleAddUserToGroup = async(userToAdd) => {
     if (selectedUsers.includes(userToAdd)) {
         toast({
@@ -32,7 +75,14 @@ const UpdateGroupChat = ({user, children}) => {
     try {
       
     } catch (error) {
-
+        toast({
+          title: "Error occured",
+          decreption: "Failed to load user data",
+          duration: 3000,
+          status: "warning",
+          isClosable: true,
+          position: "bottom-left",
+        });
     }
 
   }
@@ -118,7 +168,7 @@ const UpdateGroupChat = ({user, children}) => {
                 placeholder="Group Name" 
                 onChange={(e) => setGroupName(e.target.value)}
                />
-              <Button ml="5px">
+              <Button ml="5px" onClick={() => handleGroupRename()} isLoading={loading}>
                 Update 
               </Button>
             </FormControl>
@@ -145,7 +195,7 @@ const UpdateGroupChat = ({user, children}) => {
           </ModalBody>
 
           <ModalFooter>
-            <Button colorScheme={"orange"}>Exit Group</Button>
+            <Button >Exit Group</Button>
           </ModalFooter>
         </ModalContent>
       </Modal>
