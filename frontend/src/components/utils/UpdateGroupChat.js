@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useEffect, useState } from 'react'
 import { Modal, ModalOverlay, ModalContent, ModalHeader, ModalFooter, ModalBody, ModalCloseButton, useDisclosure } from '@chakra-ui/react'
 import { FormControl, Input, Button, Box, useToast, Spinner, Stack} from '@chakra-ui/react'
 import { ChatState } from '../../context/ChatProvider'
@@ -16,7 +16,7 @@ const UpdateGroupChat = ({user, children}) => {
   const [searchResults, setSearchResults] = useState([]);
 
   const toast = useToast();
-  
+ 
   const handleGroupRename = async() => {
 
     if (groupName.trim() === "") {
@@ -59,9 +59,12 @@ const UpdateGroupChat = ({user, children}) => {
         });
         setLoading(false);
     }
+    setGroupName("")
   }
-  const handleAddUserToGroup = async(userToAdd) => {
-    if (selectedUsers.includes(userToAdd)) {
+  const handleAddUserToGroup = async(userToBeAdd) => {
+
+    // check if the user already exists in group
+    if (selectedUsers.includes(userToBeAdd._id)) {
         toast({
             title: "User already added",
             status: "warning",
@@ -73,15 +76,27 @@ const UpdateGroupChat = ({user, children}) => {
     }
     
     try {
-      
+      const { data } = await axios.put("http://localhost:8000/api/chat/groupadd",
+        {
+          chatId: selectedChat._id,
+          userId: userToBeAdd._id,
+        },
+        {
+          headers: {
+            "Content-Type": "application/json",
+          }
+        }
+      )
+      console.log(data);
+      setSelectedChat(data);
     } catch (error) {
         toast({
           title: "Error occured",
-          decreption: "Failed to load user data",
+          decreption: "Failed to add user",
           duration: 3000,
           status: "warning",
           isClosable: true,
-          position: "bottom-left",
+          position: "bottom",
         });
     }
 
@@ -128,6 +143,11 @@ const UpdateGroupChat = ({user, children}) => {
         setLoading(false);
     }
   }
+
+  // Store the group users, so that when adding or remving we can perform checking
+  useEffect(() => {
+    setSelectedUsers(selectedChat.users.map((u) => (u._id)));
+  },[selectedChat.users])
 
   return (
     <>
