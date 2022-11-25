@@ -92,7 +92,7 @@ const UpdateGroupChat = ({user, children}) => {
     } catch (error) {
         toast({
           title: "Error occured",
-          decreption: "Failed to add user",
+          decription: "Failed to add user",
           duration: 3000,
           status: "warning",
           isClosable: true,
@@ -102,11 +102,30 @@ const UpdateGroupChat = ({user, children}) => {
 
   }
 
-  const handleRemoveUserFromGroup = (userToBeRemoved) => {
+  const handleRemoveUserFromGroup = async(userToBeRemoved) => {
     try {
-      
+      const { data } = await axios.put("http://localhost:8000/api/chat/groupremove",
+        {
+          chatId: selectedChat._id,
+          userId: userToBeRemoved._id,
+        },
+        {
+          headers: {
+            "Content-Type": "application/json",
+          }
+        }
+      )
+      console.log(data);
+      setSelectedChat(data);
     } catch (error) {
-
+        toast({
+          title: "Error occured",
+          decription: "Failed to remove user",
+          duration: 3000,
+          status: "warning",
+          isClosable: true,
+          position: "bottom",
+        });
     }
   }
 
@@ -134,7 +153,7 @@ const UpdateGroupChat = ({user, children}) => {
         console.log(error.response.data.error)
         toast({
           title: "Error occured",
-          decreption: "Failed to load user data",
+          decription: "Failed to load user data",
           duration: 3000,
           status: "warning",
           isClosable: true,
@@ -215,7 +234,7 @@ const UpdateGroupChat = ({user, children}) => {
           </ModalBody>
 
           <ModalFooter>
-            <Button >Exit Group</Button>
+            <Button colorScheme={"orange"}>Exit Group</Button>
           </ModalFooter>
         </ModalContent>
       </Modal>
