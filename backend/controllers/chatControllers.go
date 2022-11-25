@@ -253,3 +253,40 @@ func CreateGroupChat() gin.HandlerFunc {
 		c.JSON(http.StatusOK, groupChat)
 	}
 }
+
+func RenameGroupChatName() gin.HandlerFunc {
+	return func(c *gin.Context) {
+		var reqData map[string]interface{}
+
+		if err := c.BindJSON(&reqData); err != nil {
+			c.JSON(http.StatusBadRequest, gin.H{"error": "Error while parsing data"})
+			return
+		}
+
+		groupName := reqData["groupName"].(string)
+		cId := reqData["chatId"].(string)
+
+		chatId, err := primitive.ObjectIDFromHex(cId)
+		if err != nil {
+			log.Panic(err)
+		}
+
+		// get chat collection
+		chatCollection := database.OpenCollection(database.Client, "chat")
+
+		filter := bson.D{{"_id", chatId}}
+
+		update := bson.D{{"$set", bson.D{{"chatName", groupName}}}}
+
+		ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
+		defer cancel()
+
+		_, err = chatCollection.UpdateOne(ctx, filter, update)
+		if err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{"error": "Error while updating document"})
+			log.Panic(err)
+		}
+
+		c.JSON(http.StatusOK, gin.H{"updatedGroupName": groupName})
+	}
+}
