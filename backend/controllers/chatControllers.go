@@ -370,6 +370,8 @@ func AddUserToGroupChat() gin.HandlerFunc {
 			log.Panic(err)
 		}
 
+		// we can only pass array type to cursor even though we know
+		// we're just retrieving single document
 		var results []bson.M
 		if err := cursor.All(ctx, &results); err != nil {
 			log.Panic(err)
@@ -378,6 +380,100 @@ func AddUserToGroupChat() gin.HandlerFunc {
 			log.Println(docu)
 		}
 
-		c.JSON(http.StatusOK, results)
+		// send the document
+		c.JSON(http.StatusOK, results[0])
 	}
+}
+
+func DeleteUserFromGroupChat() gin.HandlerFunc {
+	return func(c *gin.Context) {
+		var reqData map[string]interface{}
+
+		if err := c.BindJSON(&reqData); err != nil {
+			c.JSON(http.StatusBadRequest, gin.H{"error": "Error while parsing data"})
+			return
+		}
+
+		uId := reqData["userId"].(string)
+		cId := reqData["chatId"].(string)
+
+		chatId, err := primitive.ObjectIDFromHex(cId)
+		if err != nil {
+			log.Panic(err)
+		}
+
+		userId, err := primitive.ObjectIDFromHex(uId)
+		if err != nil {
+			log.Panic(err)
+		}
+
+		// get chat collection
+		chatCollection := database.OpenCollection(database.Client, "chat")
+
+		filter := bson.D{{"_id", chatId}}
+
+		update := bson.D{{"$pull", bson.D{{"users", userId}}}}
+
+		ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
+		defer cancel()
+
+		res, err := chatCollection.UpdateOne(ctx, filter, update)
+		if err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{"error": "Error while updating document"})
+			log.Panic(err)
+		}
+		log.Printf("Docu up %v", res.ModifiedCount)
+		// User is added to group, now retrieve that document and send into client
+		// so that client can update its data, and perfrom necessary rendering
+		matchStage := bson.D{
+			{
+				"$match", bson.D{
+					{
+						"_id", chatId,
+					},
+				},
+			},
+		}
+
+		lookupStage := bson.D{
+			{
+				"$lookup", bson.D{
+					{"from", "user"},
+					{"localField", "users"},
+					{"foreignField", "_id"},
+					{"as", "users"},
+				},
+			},
+		}
+
+		projectStage := bson.D{
+			{
+				"$project", bson.D{
+					{"users.password", 0},
+					{"created_at", 0},
+					{"updated_at", 0},
+					{"users.created_at", 0},
+					{"users.updated_at", 0},
+				},
+			},
+		}
+
+		cursor, err := chatCollection.Aggregate(ctx, mongo.Pipeline{matchStage, lookupStage, projectStage})
+		if err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{"error": "Error checking documents"})
+			log.Panic(err)
+		}
+
+		var results []bson.M
+		if err := cursor.All(ctx, &results); err != nil {
+			log.Panic(err)
+		}
+		for _, docu := range results {
+			log.Println(docu)
+		}
+
+		// send the document
+		c.JSON(http.StatusOK, results[0])
+	}
+
 }
