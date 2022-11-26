@@ -2,12 +2,10 @@ import { useToast, Box, Text, Button, Stack} from '@chakra-ui/react';
 import { AddIcon } from '@chakra-ui/icons'
 import React, { useEffect } from 'react'
 import { ChatState } from '../../context/ChatProvider';
-import { useState } from 'react';
 import axios from "axios"
 import GroupChatModel from '../utils/GroupChatModel';
 
-const MyChats = ({fetchChat}) => {
-  const [loggedUser, setLoggedUser] = useState();
+const MyChats = ({ fetchAgain }) => {
   const {selectedChat, setSelectedChat, user, chats, setChats} = ChatState();
   const toast = useToast();
 
@@ -35,7 +33,7 @@ const MyChats = ({fetchChat}) => {
 
   useEffect(() => {
     fetchChats();
-  },[fetchChat])
+  },[fetchAgain])
 
   function getSenderName(chat) {
     if (chat.users[0]._id === user._id) 

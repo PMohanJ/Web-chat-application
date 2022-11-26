@@ -1,13 +1,13 @@
 import React from 'react'
-import { Box, Text, Button, Icon, IconButton } from '@chakra-ui/react'
+import { Box, Text, Icon, IconButton } from '@chakra-ui/react'
 import {InfoIcon} from '@chakra-ui/icons'
 import { ChatState } from '../../context/ChatProvider';
 import { ArrowBackIcon } from '@chakra-ui/icons'
 import Profile from '../Header/Profile';
 import UpdateGroupChat from '../utils/UpdateGroupChat';
 
-const Chat = () => {
-  const {selectedChat, setSelectedChat, user, chats, setChats} = ChatState();
+const Chat = ({fetchAgain, setFetchAgain}) => {
+  const {selectedChat, setSelectedChat, user} = ChatState();
   
   function getSenderName(chat) {
     if (chat.users[0]._id === user._id) 
@@ -16,12 +16,6 @@ const Chat = () => {
       return chat.users[0].name;
   }
     
-  function getSenderObj(chat) {
-    if (chat.users[0]._id === user._id) 
-      return chat.users[1];
-    else 
-      return chat.users[0];
-  }
   return (
     <>
       <Box 
@@ -52,7 +46,7 @@ const Chat = () => {
               />
             </Profile>
             : 
-            <UpdateGroupChat user={selectedChat}>
+            <UpdateGroupChat fetchAgain={fetchAgain} setFetchAgain={setFetchAgain}>
               <Icon icon={<InfoIcon />}
                 display="flex"
               />

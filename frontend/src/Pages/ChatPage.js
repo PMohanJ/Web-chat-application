@@ -7,7 +7,7 @@ import Header from '../components/Header/Header';
 
 const ChatPage = () => {
   const { user, } = ChatState();
-  const [fetchChat, setFetchState] = useState(false)
+  const [fetchAgain, setFetchAgain] = useState(false)
 
   return (
     <div style={{ width: "100%" }}>
@@ -18,8 +18,8 @@ const ChatPage = () => {
         justifyContent="space-between"
         h="92%"
       >
-        { user && <MyChats fetchChat={fetchChat}/> }
-        { user && <ChatBox />}
+        { user && <MyChats fetchAgain={fetchAgain}/> }
+        { user && <ChatBox fetchAgain={fetchAgain} setFetchAgain={setFetchAgain}/>}
       </Box>
     </div>
   )

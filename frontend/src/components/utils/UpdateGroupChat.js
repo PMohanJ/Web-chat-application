@@ -6,7 +6,7 @@ import UserBadge from './UserBadge'
 import axios from "axios"
 import UserSearchProfile from './UserSearchProfile'
 
-const UpdateGroupChat = ({children}) => {
+const UpdateGroupChat = ({fetchAgain, setFetchAgain, children}) => {
   
   const { isOpen, onOpen, onClose } = useDisclosure();
   const [selectedUsers, setSelectedUsers] = useState([]);
@@ -189,6 +189,43 @@ const UpdateGroupChat = ({children}) => {
     }
   }
 
+  // hanldeExitGroup lets the user to exit from group
+  const handleExitGroup = async(userToExit) => {
+    try {
+      const { data } = await axios.put("http://localhost:8000/api/chat/groupexit",
+        {
+          chatId: selectedChat._id,
+          userId: userToExit._id,
+        },
+        {
+          headers:{
+            "Content-Type": "application/json",
+          }
+        }
+      )
+
+      console.log(data);
+      toast({
+        title: data.message,
+        duration: 3000,
+        status: "success",
+        isClosable: true,
+        position: "bottom",
+      });
+      setFetchAgain(!fetchAgain);
+      setSelectedChat("")
+    } catch (error) {
+        toast({
+          title: "Error occured",
+          decription: "Failed to exit group",
+          duration: 3000,
+          status: "warning",
+          isClosable: true,
+          position: "bottom",
+        });
+    }
+  }
+
   // Store the group users, so that when adding users we can perform checking
   useEffect(() => {
     setSelectedUsers(selectedChat.users.map((u) => (u._id)));
@@ -260,7 +297,7 @@ const UpdateGroupChat = ({children}) => {
           </ModalBody>
 
           <ModalFooter>
-            <Button colorScheme={"orange"}>Exit Group</Button>
+            <Button colorScheme={"orange"} onClick={() => handleExitGroup(user)}>Exit Group</Button>
           </ModalFooter>
         </ModalContent>
       </Modal>
