@@ -477,3 +477,46 @@ func DeleteUserFromGroupChat() gin.HandlerFunc {
 	}
 
 }
+
+func UserExitGroup() gin.HandlerFunc {
+	return func(c *gin.Context) {
+		var reqData map[string]interface{}
+
+		if err := c.BindJSON(&reqData); err != nil {
+			c.JSON(http.StatusBadRequest, gin.H{"error": "Error while parsing data"})
+			return
+		}
+
+		uId := reqData["userId"].(string)
+		cId := reqData["chatId"].(string)
+
+		chatId, err := primitive.ObjectIDFromHex(cId)
+		if err != nil {
+			log.Panic(err)
+		}
+
+		userId, err := primitive.ObjectIDFromHex(uId)
+		if err != nil {
+			log.Panic(err)
+		}
+
+		// get chat collection
+		chatCollection := database.OpenCollection(database.Client, "chat")
+
+		filter := bson.D{{"_id", chatId}}
+
+		update := bson.D{{"$pull", bson.D{{"users", userId}}}}
+
+		ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
+		defer cancel()
+
+		res, err := chatCollection.UpdateOne(ctx, filter, update)
+		if err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{"error": "Error while updating document"})
+			log.Panic(err)
+		}
+		log.Printf("Docu up %v", res.ModifiedCount)
+
+		c.JSON(http.StatusOK, gin.H{"message": "Exited from group"})
+	}
+}

@@ -13,4 +13,5 @@ func AddChatRoutes(r *gin.RouterGroup) {
 	chat.PUT("/grouprename", controllers.RenameGroupChatName())
 	chat.PUT("/groupadd", controllers.AddUserToGroupChat())
 	chat.PUT("/groupremove", controllers.DeleteUserFromGroupChat())
+	chat.PUT("/groupexit", controllers.UserExitGroup())
 }
