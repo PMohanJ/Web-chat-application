@@ -6,12 +6,12 @@ import UserBadge from './UserBadge'
 import axios from "axios"
 import UserSearchProfile from './UserSearchProfile'
 
-const UpdateGroupChat = ({user, children}) => {
+const UpdateGroupChat = ({children}) => {
   
   const { isOpen, onOpen, onClose } = useDisclosure();
   const [selectedUsers, setSelectedUsers] = useState([]);
   const [groupName, setGroupName] = useState("");
-  const { selectedChat, setSelectedChat } = ChatState();
+  const { selectedChat, setSelectedChat, user } = ChatState();
   const [loading, setLoading] = useState(false);
   const [searchResults, setSearchResults] = useState([]);
 
@@ -25,6 +25,7 @@ const UpdateGroupChat = ({user, children}) => {
         isClosable: true,
         duration: 4000,
         status: "warning",
+        position: "bottom"
       });
       return;
     }
@@ -51,11 +52,11 @@ const UpdateGroupChat = ({user, children}) => {
     } catch (error) {
         toast({
           title: "Error occured",
-          decreption: "Failed to load user data",
-          duration: 3000,
+          decreption: "Failed to rename group",
+          duration: 4000,
           status: "warning",
           isClosable: true,
-          position: "bottom-left",
+          position: "bottom",
         });
         setLoading(false);
     }
@@ -65,16 +66,28 @@ const UpdateGroupChat = ({user, children}) => {
 
     // check if the user already exists in group
     if (selectedUsers.includes(userToBeAdd._id)) {
-        toast({
-            title: "User already added",
-            status: "warning",
-            duration: 4000,
-            isClosable: true,
-            position: "top",
-        });
-        return;
+      toast({
+          title: "User already added",
+          status: "warning",
+          duration: 4000,
+          isClosable: true,
+          position: "bottom",
+      });
+      return;
     }
     
+    // only an admin can add a user to group
+    if (user._id !== selectedChat.groupAdmin) {
+      toast({
+        title: "Sorry, only admin can add users",
+        status: "warning",
+        duration: 4000,
+        isClosable: true,
+        position: "bottom",
+      });
+      return;
+    }
+
     try {
       const { data } = await axios.put("http://localhost:8000/api/chat/groupadd",
         {
@@ -103,6 +116,19 @@ const UpdateGroupChat = ({user, children}) => {
   }
 
   const handleRemoveUserFromGroup = async(userToBeRemoved) => {
+
+    // only an admin can remove users from group
+    if (user._id !== selectedChat.groupAdmin) {
+      toast({
+        title: "Sorry, only admin can remove user",
+        status: "warning",
+        duration: 4000,
+        isClosable: true,
+        position: "bottom",
+      });
+      return;
+    }
+
     try {
       const { data } = await axios.put("http://localhost:8000/api/chat/groupremove",
         {
@@ -153,17 +179,17 @@ const UpdateGroupChat = ({user, children}) => {
         console.log(error.response.data.error)
         toast({
           title: "Error occured",
-          decription: "Failed to load user data",
+          decription: "Failed to load users data",
           duration: 3000,
           status: "warning",
           isClosable: true,
-          position: "bottom-left",
+          position: "bottom",
         });
         setLoading(false);
     }
   }
 
-  // Store the group users, so that when adding or remving we can perform checking
+  // Store the group users, so that when adding users we can perform checking
   useEffect(() => {
     setSelectedUsers(selectedChat.users.map((u) => (u._id)));
   },[selectedChat.users])
