@@ -18,6 +18,6 @@ func main() {
 	api := r.Group("/api")
 	routes.AddUserRoutes(api)
 	routes.AddChatRoutes(api)
-
+	routes.AddMessageRoutes(api)
 	r.Run(":8000")
 }
