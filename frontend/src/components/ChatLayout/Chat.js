@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react'
-import { Box, Text, Icon, IconButton, Spinner, FormControl, Input, useToast } from '@chakra-ui/react'
+import { Box, Text, Icon, IconButton, Spinner, FormControl, Input, useToast, Container } from '@chakra-ui/react'
 import {InfoIcon} from '@chakra-ui/icons'
 import { ChatState } from '../../context/ChatProvider';
 import { ArrowBackIcon } from '@chakra-ui/icons'
@@ -7,12 +7,16 @@ import Profile from '../Header/Profile';
 import UpdateGroupChat from '../utils/UpdateGroupChat';
 import axios from 'axios'
 import MessagesComp from './MessagesComp';
+import { json } from 'react-router-dom';
+
+var socket = new WebSocket('ws://localhost:8000/api/ws')
 
 const Chat = ({fetchAgain, setFetchAgain}) => {
   const {selectedChat, setSelectedChat, user} = ChatState();
   const [messages, setMessages] = useState([]);
   const [loading, setLoading] = useState(false);
   const [newMessage, setNewMessage] = useState("");
+  //const [socketConnection, setSocketConnection] = useState(false);
   const toast = useToast();
 
   function getSenderName(chat) {
@@ -45,9 +49,12 @@ const Chat = ({fetchAgain, setFetchAgain}) => {
           }
         )
         console.log(data);
+        // send msg to websockets
+        
+        sendmessage(JSON.stringify(data));
         setNewMessage("");
-        setMessages([...messages, data]);
-
+        //setMessages([...messages, data]);
+        
       } catch (error) {
           toast({
             title: "Failed to send message",
@@ -72,7 +79,7 @@ const Chat = ({fetchAgain, setFetchAgain}) => {
       console.log(data);
       setLoading(false);
       setMessages(data);
-
+      sendmessage(JSON.stringify({"messageType":"setup", "chat": selectedChat._id}))
     } catch (error) {
         toast({
           title: "Failed to load messages",
@@ -84,12 +91,42 @@ const Chat = ({fetchAgain, setFetchAgain}) => {
     }
   }
 
+
+  const sendmessage = (msg) => {
+    socket.send(msg);
+  }
+
   // fetches messages upon changing the selectedChat, 
   // means user switched to other person to chat with 
   useEffect(() => {
-    fetchMessages()
+    fetchMessages();
   }, [selectedChat])
-    
+  
+  function addMessage(msg){
+    setMessages([...messages, msg])
+  }
+
+  useEffect(() => {
+    window.client = socket 
+
+    socket.onopen = () => {
+      console.log("Successfully connected");
+    }
+
+    socket.onmessage = (msg) => {
+        console.log(JSON.parse(msg.data))
+        addMessage(JSON.parse(msg.data))
+    }
+
+    socket.onclose = (event) => {
+        console.log("Socket closed connection: ", event);
+    }
+
+    socket.onerror = (error) => {
+        console.log("Socket error: ", error);
+    }
+  })
+
   return (
     <>
       <Box 
@@ -144,7 +181,7 @@ const Chat = ({fetchAgain, setFetchAgain}) => {
       >
         {loading? 
           (<Spinner size="lg" alignSelf="center" margin="auto"/>)
-            : <div style={{overflowY: "auto", padding: "3px"}}>
+            : <div style={{overflowY: "auto", padding: "3px", overscrollBehaviorY: "contain", scrollSnapType: "y proximity"}}>
                 <MessagesComp messages={messages} />
               </div>}
 
