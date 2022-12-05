@@ -5,6 +5,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/pmohanj/web-chat-app/database"
 	"github.com/pmohanj/web-chat-app/routes"
+	"github.com/pmohanj/web-chat-app/websocket"
 )
 
 func main() {
@@ -19,5 +20,12 @@ func main() {
 	routes.AddUserRoutes(api)
 	routes.AddChatRoutes(api)
 	routes.AddMessageRoutes(api)
+
+	// create websocketserver
+	websocket := websocket.CreateWebSocketsServer()
+
+	go websocket.SendMessage()
+	routes.AddWebScoketRouter(api, websocket)
+
 	r.Run(":8000")
 }
