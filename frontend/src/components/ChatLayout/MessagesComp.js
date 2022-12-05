@@ -6,9 +6,12 @@ import { isSenderTheLoggedInUser } from '../utils/messagesRendering'
 const MessagesComp = ({ messages }) => {
     const {user} = ChatState();
 
+    // reversing the order of msg, so that bottom location
+    // is prioritized as needed for chatting
+    let reveMessages = messages.slice().reverse();
   return (
     <>
-        {messages && messages.map((m) => (
+        {reveMessages && reveMessages.map((m) => (
         <div style={{display: "flex"}} key={m._id}>
             <Text
               backgroundColor={isSenderTheLoggedInUser(m, user._id)? "#BEE3F8": "#B9F5D0"}

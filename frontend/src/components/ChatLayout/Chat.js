@@ -32,8 +32,8 @@ const Chat = ({fetchAgain, setFetchAgain}) => {
     else 
       return chat.users[0];
   }
-  const sendMessage = async(e) => {
-    if (e.key === "Enter" && newMessage) {
+  const sendMessage = async(event) => {
+    if (event.key === "Enter" && newMessage) {
       const content = newMessage.trim()
       try {
         const { data } = await axios.post("http://localhost:8000/api/message/", 
@@ -48,13 +48,9 @@ const Chat = ({fetchAgain, setFetchAgain}) => {
             }
           }
         )
-        console.log(data);
-        // send msg to websockets
-        
+        // send the message to server, so that server will broadcast it
         sendmessage(JSON.stringify(data));
         setNewMessage("");
-        //setMessages([...messages, data]);
-        
       } catch (error) {
           toast({
             title: "Failed to send message",
@@ -78,8 +74,11 @@ const Chat = ({fetchAgain, setFetchAgain}) => {
       )
       console.log(data);
       setLoading(false);
-      setMessages(data);
+      if (data) {
+        setMessages(data);
+      }
       sendmessage(JSON.stringify({"messageType":"setup", "chat": selectedChat._id}))
+
     } catch (error) {
         toast({
           title: "Failed to load messages",
@@ -91,21 +90,22 @@ const Chat = ({fetchAgain, setFetchAgain}) => {
     }
   }
 
-
-  const sendmessage = (msg) => {
-    socket.send(msg);
-  }
-
-  // fetches messages upon changing the selectedChat, 
+  // fetch messages upon changing the selectedChat, 
   // means user switched to other person to chat with 
   useEffect(() => {
     fetchMessages();
   }, [selectedChat])
   
-  function addMessage(msg){
+  const addMessage = (msg) => {
     setMessages([...messages, msg])
   }
 
+  const sendmessage = (msg) => {
+    socket.send(msg);
+  }
+
+  // need to handle the reconnection to socket if any interruption 
+  // occured to websocket connection
   useEffect(() => {
     window.client = socket 
 
@@ -181,7 +181,7 @@ const Chat = ({fetchAgain, setFetchAgain}) => {
       >
         {loading? 
           (<Spinner size="lg" alignSelf="center" margin="auto"/>)
-            : <div style={{overflowY: "auto", padding: "3px", overscrollBehaviorY: "contain", scrollSnapType: "y proximity"}}>
+            : <div style={{ display:"flex", flexDirection:"column-reverse", overflowY: "hidden", overflowY:"auto", padding: "3px"}}>
                 <MessagesComp messages={messages} />
               </div>}
 
