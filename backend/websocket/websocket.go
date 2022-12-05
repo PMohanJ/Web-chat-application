@@ -1,6 +1,7 @@
 package websocket
 
 import (
+	"errors"
 	"log"
 
 	"github.com/gin-gonic/gin"
@@ -29,21 +30,43 @@ func (ws *WebSockets) WSEndpoint() gin.HandlerFunc {
 			Conn:       conn,
 			WebSockets: ws,
 		}
-
+		defer func() {
+			client.Conn.Close()
+			ws.removeClient(client)
+		}()
 		for {
 			var data map[string]interface{}
 			err := client.Conn.ReadJSON(&data)
 			if err != nil {
-				log.Panic(err)
+				client.Conn.Close()
+				log.Println("client closed")
+				break
 			}
 
-			log.Printf("data received is %+v", data)
 			err = ws.HandleClientMessage(client, data)
 			if err != nil {
 				log.Panic(err)
 			}
 		}
 
+	}
+}
+
+// removeClient removes client from websocket pool
+func (ws *WebSockets) removeClient(clientObj *Client) {
+	for chatId, clients := range ws.Clients {
+		var done bool
+		for i, client := range clients {
+			if client == clientObj {
+				clients = append(clients[:i], clients[i+1:]...)
+				ws.Clients[chatId] = clients
+				done = true
+				break
+			}
+		}
+		if done {
+			break
+		}
 	}
 }
 
@@ -54,48 +77,27 @@ func (ws *WebSockets) HandleClientMessage(clientObj *Client, data map[string]int
 	// check if client is initiating the connection
 	if data["messageType"] == "setup" {
 		// create that chat and add the client
-		chatId := data["chat"].(string)
+		chatId, ok := data["chat"].(string)
+		if !ok {
+			return errors.New("chat id type is not string")
+		}
 
-		var clients []*Client
-		clients = append(clients, clientObj)
-		ws.Clients[chatId] = clients
-
-		log.Println("Client added to list")
-	} else {
-		// check if chat already exist in our pool
-		chatId := data["chat"].(string)
-		cl, exists := ws.Clients[chatId]
+		clients, exists := ws.Clients[chatId]
 		if exists {
-			var clientExists bool
-			for _, client := range cl {
-				if clientObj == client {
-					clientExists = true
-
-					// client already exists, so send the data
-					clientObj.WebSockets.Broadcast <- data
-					break
-				}
-			}
-
-			// if client doesn't exist in that chat so far, add that client and broadcast the msg
-			if !clientExists {
-				clients := ws.Clients[chatId]
-				clients = append(clients, clientObj)
-				ws.Clients[chatId] = clients
-				log.Println("Client added to list")
-				clientObj.WebSockets.Broadcast <- data
-			}
+			clients = append(clients, clientObj)
+			ws.Clients[chatId] = clients
 		} else {
-			// create that chat and add the client
 			var clients []*Client
 			clients = append(clients, clientObj)
 			ws.Clients[chatId] = clients
-
-			log.Println("Client added to list")
-			clientObj.WebSockets.Broadcast <- data
 		}
-	}
 
+		log.Printf("Client added to list %+v", clientObj)
+	} else {
+
+		// broadcast the message/data
+		clientObj.WebSockets.Broadcast <- data
+	}
 	return nil
 }
 
@@ -105,7 +107,6 @@ func (ws *WebSockets) SendMessage() {
 	for {
 		msg := <-ws.Broadcast
 		chatId := msg["chat"].(string)
-		log.Printf("msg received from broad %+v", msg)
 
 		// get the chat to which the msg should be send
 		clientsOfThisChat := ws.Clients[chatId]

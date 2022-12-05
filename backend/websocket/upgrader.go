@@ -1,7 +1,6 @@
 package websocket
 
 import (
-	"log"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
@@ -18,7 +17,7 @@ func Upgrade(w gin.ResponseWriter, r *http.Request) (*websocket.Conn, error) {
 	upgrader.CheckOrigin = func(r *http.Request) bool { return true }
 	conn, err := upgrader.Upgrade(w, r, nil)
 	if err != nil {
-		log.Panic(err)
+		return nil, err
 	}
 
 	return conn, nil
