@@ -89,7 +89,7 @@ const MyChats = ({ fetchAgain }) => {
                   {chat.isGroupChat? chat.chatName: getSenderName(chat)}
                 </Text>
                 <Text fontSize="small">
-                  {chat.latestMessage === "000000000000000000000000" ? "Yo bro no msg YET!": chat.latestMessage.content}
+                  {chat.latestMessage.length > 0 ? chat.latestMessage[0].content: ""}
                 </Text>
               </Box>
             ))}
