@@ -83,11 +83,11 @@ func SendMessage() gin.HandlerFunc {
 		projectStage := bson.D{
 			{
 				"$project", bson.D{
-					{"users.password", 0},
+					{"sender.password", 0},
 					{"created_at", 0},
 					{"updated_at", 0},
-					{"users.created_at", 0},
-					{"users.updated_at", 0},
+					{"sender.created_at", 0},
+					{"sender.updated_at", 0},
 				},
 			},
 		}
