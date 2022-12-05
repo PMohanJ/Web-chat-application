@@ -5,10 +5,11 @@ import { isSenderTheLoggedInUser } from '../utils/messagesRendering'
 
 const MessagesComp = ({ messages }) => {
     const {user} = ChatState();
-
+  
     // reversing the order of msg, so that bottom location
     // is prioritized as needed for chatting
-    let reveMessages = messages.slice().reverse();
+    const reveMessages = messages.slice().reverse();
+    
   return (
     <>
         {reveMessages && reveMessages.map((m) => (

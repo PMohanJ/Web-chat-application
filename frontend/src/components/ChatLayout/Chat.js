@@ -74,9 +74,12 @@ const Chat = ({fetchAgain, setFetchAgain}) => {
       )
       console.log(data);
       setLoading(false);
-      if (data) {
+      if (data == null){
+        setMessages([]);
+      } else {
         setMessages(data);
       }
+     
       sendmessage(JSON.stringify({"messageType":"setup", "chat": selectedChat._id}))
 
     } catch (error) {
@@ -181,7 +184,7 @@ const Chat = ({fetchAgain, setFetchAgain}) => {
       >
         {loading? 
           (<Spinner size="lg" alignSelf="center" margin="auto"/>)
-            : <div style={{ display:"flex", flexDirection:"column-reverse", overflowY: "hidden", overflowY:"auto", padding: "3px"}}>
+            : <div style={{ display:"flex", flexDirection:"column-reverse", overflowY:"auto", padding: "3px"}}>
                 <MessagesComp messages={messages} />
               </div>}
 
