@@ -163,6 +163,17 @@ func GetUserChats() gin.HandlerFunc {
 			},
 		}
 
+		lookupStageLatestMessage := bson.D{
+			{
+				"$lookup", bson.D{
+					{"from", "message"},
+					{"localField", "latestMessage"},
+					{"foreignField", "_id"},
+					{"as", "latestMessage"},
+				},
+			},
+		}
+
 		projectStage := bson.D{
 			{
 				"$project", bson.D{
@@ -178,7 +189,7 @@ func GetUserChats() gin.HandlerFunc {
 		ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
 		defer cancel()
 
-		cursor, err := chatCollection.Aggregate(ctx, mongo.Pipeline{matchStage, lookupStage, projectStage})
+		cursor, err := chatCollection.Aggregate(ctx, mongo.Pipeline{matchStage, lookupStage, lookupStageLatestMessage, projectStage})
 		if err != nil {
 			c.JSON(http.StatusInternalServerError, gin.H{"error": "Error checking documents"})
 			log.Panic(err)
