@@ -9,6 +9,7 @@ import (
 )
 
 type CustomClaims struct {
+	ID    string
 	Name  string
 	Email string
 	jwt.RegisteredClaims
@@ -16,9 +17,10 @@ type CustomClaims struct {
 
 var SECRET_KEY string = os.Getenv("SECRET_KEY")
 
-func GenerateToken(name, email string) (string, error) {
+func GenerateToken(id, name, email string) (string, error) {
 
 	claims := CustomClaims{
+		ID:    id,
 		Name:  name,
 		Email: email,
 		RegisteredClaims: jwt.RegisteredClaims{
@@ -27,7 +29,7 @@ func GenerateToken(name, email string) (string, error) {
 		},
 	}
 
-	token, err := jwt.NewWithClaims(jwt.SigningMethodHS256, claims).SignedString(SECRET_KEY)
+	token, err := jwt.NewWithClaims(jwt.SigningMethodHS256, claims).SignedString([]byte(SECRET_KEY))
 	if err != nil {
 		return "", err
 	}
