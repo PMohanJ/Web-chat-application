@@ -24,18 +24,20 @@ func SendMessage() gin.HandlerFunc {
 		}
 
 		cId := reqData["chatId"].(string)
-		sId := reqData["senderId"].(string)
 		content := reqData["content"].(string)
 
 		chatId, err := primitive.ObjectIDFromHex(cId)
 		if err != nil {
 			log.Panic(err)
 		}
-		senderId, err := primitive.ObjectIDFromHex(sId)
-		if err != nil {
-			log.Panic(err)
+
+		//senderId refers to the user who's sending the message
+		sId, exists := c.Get("_id")
+		if !exists {
+			log.Panic("User details not available")
 		}
 
+		senderId := sId.(primitive.ObjectID)
 		newMessage := models.Message{
 			Sender:  senderId,
 			Content: content,

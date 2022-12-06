@@ -111,7 +111,7 @@ func AuthUser() gin.HandlerFunc {
 		}
 
 		// generate token for the user
-		if user.Token, err = helpers.GenerateToken(registeredUser.Id.Hex(), user.Name, user.Email); err != nil {
+		if registeredUser.Token, err = helpers.GenerateToken(registeredUser.Id.Hex(), user.Name, user.Email); err != nil {
 			c.JSON(http.StatusInternalServerError, gin.H{"error": "Unable to generate token"})
 			log.Panic(err)
 		}

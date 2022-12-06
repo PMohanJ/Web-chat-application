@@ -33,11 +33,11 @@ func AddOChatUser() gin.HandlerFunc {
 		chatCollection := database.OpenCollection(database.Client, "chat")
 
 		// get the ids and convert them back to primitive.ObjectID format for querying
-		id1 := ids["addingUser"].(string)
-		addingUser, err := primitive.ObjectIDFromHex(id1)
-		if err != nil {
-			log.Panic(err)
+		id1, exists := c.Get("_id")
+		if !exists {
+			log.Panic("User details not available")
 		}
+		addingUser := id1.(primitive.ObjectID)
 
 		id2 := ids["userToBeAdded"].(string)
 		userToBeAdded, err := primitive.ObjectIDFromHex(id2)
@@ -221,13 +221,14 @@ func CreateGroupChat() gin.HandlerFunc {
 		// assuming that the admin user id is sent separately as JWT is not implemented yet,
 		// we can't exactly distinguish between normal and admin user
 		users := groupData["users"].([]interface{})
-		aUser := groupData["adminUser"].(string)
+
+		aUser, exists := c.Get("_id")
+		if !exists {
+			log.Panic("User details not available")
+		}
+		adminUser := aUser.(primitive.ObjectID)
 
 		var usersIds []primitive.ObjectID
-		adminUser, err := primitive.ObjectIDFromHex(aUser)
-		if err != nil {
-			log.Panic(err)
-		}
 		usersIds = append(usersIds, adminUser)
 
 		for _, uId := range users {
