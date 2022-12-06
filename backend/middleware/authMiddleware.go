@@ -2,12 +2,14 @@ package middleware
 
 import (
 	"errors"
+	"log"
 	"net/http"
 	"strings"
 
 	"github.com/gin-gonic/gin"
 	"github.com/golang-jwt/jwt/v4"
 	"github.com/pmohanj/web-chat-app/helpers"
+	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
 // Authenticate acts as authorization middleware that receives the client request
@@ -27,8 +29,11 @@ func Authenticate() gin.HandlerFunc {
 			c.Abort()
 			return
 		}
-
-		c.Set("_id", claims.ID)
+		id, err := primitive.ObjectIDFromHex(claims.ID)
+		if err != nil {
+			log.Panic(err)
+		}
+		c.Set("_id", id)
 		c.Set("name", claims.Name)
 		c.Set("email", claims.Email)
 		c.Next()
