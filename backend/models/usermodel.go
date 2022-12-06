@@ -13,17 +13,19 @@ type User struct {
 	Password   string             `json:"password,required" bson:"password"`
 	Pic        string             `json:"pic" bson:"pic"`
 	IsAdmin    bool               `json:"isAdmin" bson:"isAdmin"` // if no value is provided, then bydefault it is set to false
-	Created_at time.Time          `json:"created_at" bson:"created_at"`
-	Updated_at time.Time          `json:"updated_at" bson:"updated_at"`
+	Created_at time.Time          `json:"-" bson:"created_at"`
+	Updated_at time.Time          `json:"-" bson:"updated_at"`
+	Token      string             `json:"token" bson:"-"`
 }
 
 type UserResponse struct {
-	Id       primitive.ObjectID `json:"_id" bson:"_id"`
+	Id       primitive.ObjectID `json:"_id,omitempty" bson:"_id,omitempty"`
 	Name     string             `json:"name" bson:"name"`
 	Email    string             `json:"email" bson:"email"`
-	Password string             `json:"-"`
+	Password string             `json:"-" bson:"password"`
 	Pic      string             `json:"pic" bson:"pic"`
-	IsAdmin  bool               `json:"-"`
+	IsAdmin  bool               `json:"-" bson:"isAdmin"`
+	Token    string             `json:"token" bson:"-"`
 }
 
 func (u *User) SetDefaultPic() {

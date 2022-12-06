@@ -64,16 +64,20 @@ func RegisterUser() gin.HandlerFunc {
 		}
 
 		user.Id = insId.InsertedID.(primitive.ObjectID)
-		c.JSON(http.StatusOK, user)
+		id := user.Id.Hex()
+		// generate token for the user
+		if user.Token, err = helpers.GenerateToken(id, user.Name, user.Email); err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{"error": "Unable to generate token"})
+			log.Panic(err)
+		}
 
+		c.JSON(http.StatusOK, user)
 	}
 }
 
 func AuthUser() gin.HandlerFunc {
 	return func(c *gin.Context) {
 
-		// should use other stuct as user login credential only containe email, pass...
-		// will modify later
 		var user models.User
 		if err := c.BindJSON(&user); err != nil {
 			c.JSON(http.StatusBadRequest, gin.H{"error": "Err while decoing data"})
@@ -106,7 +110,12 @@ func AuthUser() gin.HandlerFunc {
 			return
 		}
 
-		// user is authorized
+		// generate token for the user
+		if user.Token, err = helpers.GenerateToken(registeredUser.Id.Hex(), user.Name, user.Email); err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{"error": "Unable to generate token"})
+			log.Panic(err)
+		}
+
 		c.JSON(http.StatusOK, registeredUser)
 	}
 }
