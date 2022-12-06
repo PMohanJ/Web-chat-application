@@ -3,11 +3,12 @@ package routes
 import (
 	"github.com/gin-gonic/gin"
 	"github.com/pmohanj/web-chat-app/controllers"
+	"github.com/pmohanj/web-chat-app/middleware"
 )
 
 func AddMessageRoutes(router *gin.RouterGroup) {
 	messageRouter := router.Group("/message")
 
-	messageRouter.POST("/", controllers.SendMessage())
-	messageRouter.GET("/:chatId", controllers.GetMessages())
+	messageRouter.POST("/", middleware.Authenticate(), controllers.SendMessage())
+	messageRouter.GET("/:chatId", middleware.Authenticate(), controllers.GetMessages())
 }
