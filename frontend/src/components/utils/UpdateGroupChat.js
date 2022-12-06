@@ -41,6 +41,7 @@ const UpdateGroupChat = ({fetchAgain, setFetchAgain, children}) => {
         {
           headers:{
             "Content-Type": "application/json",
+            "Authorization": `Bearer ${user.token}`
           }
         }
       )
@@ -62,6 +63,7 @@ const UpdateGroupChat = ({fetchAgain, setFetchAgain, children}) => {
     }
     setGroupName("")
   }
+
   const handleAddUserToGroup = async(userToBeAdd) => {
 
     // check if the user already exists in group
@@ -97,6 +99,7 @@ const UpdateGroupChat = ({fetchAgain, setFetchAgain, children}) => {
         {
           headers: {
             "Content-Type": "application/json",
+            "Authorization": `Bearer ${user.token}`
           }
         }
       )
@@ -138,6 +141,7 @@ const UpdateGroupChat = ({fetchAgain, setFetchAgain, children}) => {
         {
           headers: {
             "Content-Type": "application/json",
+            "Authorization": `Bearer ${user.token}`
           }
         }
       )
@@ -164,11 +168,12 @@ const UpdateGroupChat = ({fetchAgain, setFetchAgain, children}) => {
     try {
       setLoading(true);
 
-      const { data } = await axios.get(
-        `http://localhost:8000/api/user/search?search=${search}`,
+      const url = `http://localhost:8000/api/user/search?search=${search}`
+      const { data } = await axios.get(url,
         {
           headers: {
             "Content-Type":"application/json",
+            "Authorization": `Bearer ${user.token}`
           }
         }
       );
@@ -195,11 +200,11 @@ const UpdateGroupChat = ({fetchAgain, setFetchAgain, children}) => {
       const { data } = await axios.put("http://localhost:8000/api/chat/groupexit",
         {
           chatId: selectedChat._id,
-          userId: userToExit._id,
         },
         {
           headers:{
             "Content-Type": "application/json",
+            "Authorization": `Bearer ${user.token}`
           }
         }
       )

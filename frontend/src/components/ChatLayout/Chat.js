@@ -39,12 +39,12 @@ const Chat = ({fetchAgain, setFetchAgain}) => {
         const { data } = await axios.post("http://localhost:8000/api/message/", 
           {
             content: content,
-            senderId: user._id,
             chatId: selectedChat._id,
           },
           {
             headers: {
-              "Content-Type": "application/json"
+              "Content-Type": "application/json",
+              "Authorization": `Bearer ${user.token}`
             }
           }
         )
@@ -65,10 +65,12 @@ const Chat = ({fetchAgain, setFetchAgain}) => {
   const fetchMessages = async() => {
     try {
       setLoading(true);
-      const { data } = await axios.get(`http://localhost:8000/api/message/${selectedChat._id}`, 
+      const url = `http://localhost:8000/api/message/${selectedChat._id}`
+      const { data } = await axios.get(url, 
         {
           headers: {
-            "Content-Type": "application/json"
+            "Content-Type": "application/json",
+            "Authorization": `Bearer ${user.token}`
           }
         }
       )

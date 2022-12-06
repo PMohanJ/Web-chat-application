@@ -11,11 +11,12 @@ const MyChats = ({ fetchAgain }) => {
 
   const fetchChats = async() => {
     try {
-      const url = "http://localhost:8000/api/chat/"+ user._id
+      const url = `http://localhost:8000/api/chat/${user._id}`
       const { data } = await axios.get(url, 
         {
           headers: {
-            "Content-Type":"application/json"
+            "Content-Type": "application/json",
+            "Authorization": `Bearer ${user.token}`
           }
         }
       )

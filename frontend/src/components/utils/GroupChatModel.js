@@ -42,11 +42,11 @@ const GroupChatModel = ({children}) => {
       try {
         setLoading(true)
         const url = "http://localhost:8000/api/user/search?search="+query.toString()
-        const { data } = await axios.get(
-          url,
+        const { data } = await axios.get(url,
           {
             headers:{
-              "Content-Type": "application/json"
+              "Content-Type": "application/json",
+              "Authorization": `Bearer ${user.token}`
             }
           }
         )
@@ -114,12 +114,12 @@ const GroupChatModel = ({children}) => {
         const { data } = await axios.post("http://localhost:8000/api/chat/group",
           {
             groupName: groupName,
-            users: selectedUsers.map((u) => u._id),
-            adminUser: user._id,
+            users: selectedUsers.map((u) => u._id)
           },
           {
             headers:{
               "Content-Type": "application/json",
+              "Authorization": `Bearer ${user.token}`
             }
           }
         )

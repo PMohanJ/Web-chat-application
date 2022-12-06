@@ -31,23 +31,24 @@ const SideDrawer = () => {
     try {
       setLoading(true);
 
-      const {data} = await axios.post(
-        "http://localhost:8000/api/chat/",
+      const {data} = await axios.post("http://localhost:8000/api/chat/",
         {
-          addingUser: user._id,
           userToBeAdded: userId
         },
         {
           headers:{
-            "Content-Type": "application/json"
+            "Content-Type": "application/json",
+            "Authorization": `Bearer ${user.token}`
           }
         }
       )
+      if (!chats.find((c) => c._id === data.id)) {
+        setChats([data, ...chats]);
+      }
       setLoading(false);
       setSelectedChat(data)
       console.log(data);
       onClose();
-
     } catch (error){
         toast({
           title: "Error while adding users",
@@ -76,11 +77,12 @@ const SideDrawer = () => {
     try {
       setLoading(true);
 
-      const { data } = await axios.get(
-        `http://localhost:8000/api/user/search?search=${search}`,
+      const url = `http://localhost:8000/api/user/search?search=${search}`
+      const { data } = await axios.get(url,
         {
           headers: {
             "Content-Type":"application/json",
+            "Authorization": `Bearer ${user.token}`
           }
         }
       );
