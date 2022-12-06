@@ -1,6 +1,8 @@
 package main
 
 import (
+	"time"
+
 	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
 	"github.com/pmohanj/web-chat-app/database"
@@ -15,7 +17,12 @@ func main() {
 	database.DBinstance()
 
 	// Allows all origins, not suitable for prod environments
-	r.Use(cors.Default())
+	r.Use(cors.New(cors.Config{
+		AllowOrigins: []string{"http://localhost:3000"},
+		AllowMethods: []string{"PUT", "GET", "POST"},
+		AllowHeaders: []string{"Content-Type", "Authorization"},
+		MaxAge:       12 * time.Hour,
+	}))
 	api := r.Group("/api")
 	routes.AddUserRoutes(api)
 	routes.AddChatRoutes(api)
