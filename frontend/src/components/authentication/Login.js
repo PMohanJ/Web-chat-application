@@ -55,6 +55,9 @@ const Login = () => {
         position: "top",
       });
 
+      if (localStorage.getItem("userInfo") !== null) {
+        localStorage.removeItem("userInfo");
+      }
       // storing user details in localstorage
       localStorage.setItem("userInfo", JSON.stringify(data));
       setLoading(false);
