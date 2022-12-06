@@ -1,6 +1,7 @@
 package helpers
 
 import (
+	"errors"
 	"fmt"
 	"os"
 	"time"
@@ -37,7 +38,7 @@ func GenerateToken(id, name, email string) (string, error) {
 }
 
 func ValidateToken(tokenString string) (*CustomClaims, error) {
-	token, err := jwt.Parse(tokenString, func(t *jwt.Token) (interface{}, error) {
+	token, err := jwt.ParseWithClaims(tokenString, &CustomClaims{}, func(t *jwt.Token) (interface{}, error) {
 		// validating the signing algorithm
 		if _, ok := t.Method.(*jwt.SigningMethodHMAC); !ok {
 			return nil, fmt.Errorf("Unexpected signing method: %v", t.Header["alg"])
@@ -46,9 +47,13 @@ func ValidateToken(tokenString string) (*CustomClaims, error) {
 		return []byte(SECRET_KEY), nil
 	})
 
-	claims, ok := token.Claims.(*CustomClaims)
-	if !ok {
+	if err != nil {
 		return nil, err
+	}
+
+	claims, ok := token.Claims.(*CustomClaims)
+	if !ok || !token.Valid {
+		return nil, errors.New("Token not valid or claims not extracted")
 	}
 
 	return claims, nil
