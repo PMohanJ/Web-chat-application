@@ -95,9 +95,8 @@ const SideDrawer = () => {
       );
       console.log(data)
       setLoading(false);
-      setSearchResults(data);
+      setSearchResults(data.filter((u) => u._id !== user._id));
     } catch (error) {
-        console.log(error.response.data.error)
         toast({
           title: "Error occured",
           decreption: "Failed to load user data",
@@ -188,8 +187,12 @@ const SideDrawer = () => {
               {loading && <Spinner color='red.500'/>} 
             </Box>
             
-            {searchResults? searchResults.map((item) =>(
-                <UserSearchProfile key={item._id} user={item} handleFunction={() => getSelectedUserChat(item._id)}/>
+            {searchResults? searchResults.map((user) =>(
+                <UserSearchProfile 
+                  key={user._id}
+                  user={user} 
+                  handleFunction={() => getSelectedUserChat(user._id)}
+                />
             )): null}
            
           </DrawerBody>
