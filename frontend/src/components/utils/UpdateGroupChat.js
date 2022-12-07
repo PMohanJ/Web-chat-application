@@ -14,9 +14,9 @@ const UpdateGroupChat = ({fetchAgain, setFetchAgain, children}) => {
   const { selectedChat, setSelectedChat, user } = ChatState();
   const [loading, setLoading] = useState(false);
   const [searchResults, setSearchResults] = useState([]);
-
   const toast = useToast();
  
+  // handleGroupRename updates the Group chat name
   const handleGroupRename = async() => {
 
     if (groupName.trim() === "") {
@@ -64,6 +64,7 @@ const UpdateGroupChat = ({fetchAgain, setFetchAgain, children}) => {
     setGroupName("")
   }
 
+  // handleAddUserToGroup adds the selected user to Group chat
   const handleAddUserToGroup = async(userToBeAdd) => {
 
     // check if the user already exists in group
@@ -118,6 +119,7 @@ const UpdateGroupChat = ({fetchAgain, setFetchAgain, children}) => {
 
   }
 
+  // handleRemoveUserFromGroup removes the selected user from Group chat
   const handleRemoveUserFromGroup = async(userToBeRemoved) => {
 
     // only an admin can remove users from group
@@ -126,6 +128,19 @@ const UpdateGroupChat = ({fetchAgain, setFetchAgain, children}) => {
         title: "Sorry, only admin can remove user",
         status: "warning",
         duration: 4000,
+        isClosable: true,
+        position: "bottom",
+      });
+      return;
+    }
+
+    // If admin tries to remove himself, then he should exit group
+    // which makes the whole chat to be removed
+    if (userToBeRemoved._id === selectedChat.groupAdmin) {
+      toast({
+        title: "Use 'Exit Group' button to remove yourself",
+        status: "warning",
+        duration: 5000,
         isClosable: true,
         position: "bottom",
       });
@@ -159,6 +174,7 @@ const UpdateGroupChat = ({fetchAgain, setFetchAgain, children}) => {
     }
   }
 
+  // handleSearch queries the backend for provided search key
   const handleSearch = async(search) => {
     search = search.trim();
     if (!search){
@@ -194,7 +210,7 @@ const UpdateGroupChat = ({fetchAgain, setFetchAgain, children}) => {
     }
   }
 
-  // hanldeExitGroup lets the user to exit from group
+  // hanldeExitGroup lets the user to exit from Group chat
   const handleExitGroup = async(userToExit) => {
     try {
       const { data } = await axios.put("http://localhost:8000/api/chat/groupexit",
@@ -284,7 +300,6 @@ const UpdateGroupChat = ({fetchAgain, setFetchAgain, children}) => {
                   onChange={(e) => handleSearch(e.target.value)}
                 />
             </FormControl>
-
            
             {loading ? 
               <Spinner/>
@@ -298,9 +313,7 @@ const UpdateGroupChat = ({fetchAgain, setFetchAgain, children}) => {
                     )) }
                   </Stack>
             }
-           
           </ModalBody>
-
           <ModalFooter>
             <Button colorScheme={"orange"} onClick={() => handleExitGroup(user)}>Exit Group</Button>
           </ModalFooter>
