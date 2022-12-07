@@ -24,6 +24,7 @@ const SideDrawer = () => {
   const handleLogout = () => {
     localStorage.removeItem("userInfo");
     navigate('/')
+    window.location.reload();
   }
 
   // get the selected user chats 
