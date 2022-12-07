@@ -295,9 +295,52 @@ func CreateGroupChat() gin.HandlerFunc {
 		}
 
 		insertedId := insId.InsertedID.(primitive.ObjectID)
-		groupChat.Id = insertedId
 
-		c.JSON(http.StatusOK, groupChat)
+		matchStage := bson.D{
+			{
+				"$match", bson.D{
+					{
+						"_id", insertedId,
+					},
+				},
+			},
+		}
+
+		lookupStage := bson.D{
+			{
+				"$lookup", bson.D{
+					{"from", "user"},
+					{"localField", "users"},
+					{"foreignField", "_id"},
+					{"as", "users"},
+				},
+			},
+		}
+
+		projectStage := bson.D{
+			{
+				"$project", bson.D{
+					{"users.password", 0},
+					{"created_at", 0},
+					{"updated_at", 0},
+					{"users.created_at", 0},
+					{"users.updated_at", 0},
+				},
+			},
+		}
+
+		cursor, err := chatCollection.Aggregate(ctx, mongo.Pipeline{matchStage, lookupStage, projectStage})
+		if err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{"error": "Error checking documents"})
+			log.Panic(err)
+		}
+
+		var results []bson.M
+		if err := cursor.All(ctx, &results); err != nil {
+			log.Panic(err)
+		}
+
+		c.JSON(http.StatusOK, results[0])
 	}
 }
 
@@ -534,18 +577,18 @@ func UserExitGroup() gin.HandlerFunc {
 			return
 		}
 
-		uId := reqData["userId"].(string)
 		cId := reqData["chatId"].(string)
+		uId, exists := c.Get("_id")
+		if !exists {
+			log.Panic("User details not available")
+		}
 
 		chatId, err := primitive.ObjectIDFromHex(cId)
 		if err != nil {
 			log.Panic(err)
 		}
 
-		userId, err := primitive.ObjectIDFromHex(uId)
-		if err != nil {
-			log.Panic(err)
-		}
+		userId := uId.(primitive.ObjectID)
 
 		// get chat collection
 		chatCollection := database.OpenCollection(database.Client, "chat")
