@@ -78,7 +78,7 @@ func AddOChatUser() gin.HandlerFunc {
 			projectStage := bson.D{
 				{
 					"$project", bson.D{
-						{"users.password", 0}, {"users.isAdmin", 0}, {"created_at", 0}, {"updated_at", 0}, {"users.created_at", 0}, {"users.updated_at", 0},
+						{"users.password", 0}, {"created_at", 0}, {"updated_at", 0}, {"users.created_at", 0}, {"users.updated_at", 0},
 					},
 				},
 			}
@@ -105,7 +105,7 @@ func AddOChatUser() gin.HandlerFunc {
 			log.Panic(err)
 		}
 
-		// No chat existed, so create it
+		// No chat existed, so create a chat for the users
 		createChat := models.Chat{
 			ChatName:    "sender",
 			IsGroupChat: false,
@@ -120,14 +120,49 @@ func AddOChatUser() gin.HandlerFunc {
 		insertedId := insId.InsertedID.(primitive.ObjectID)
 		log.Println(insertedId)
 
-		var insertedChat models.Chat
-		err = chatCollection.FindOne(ctx, bson.D{{"_id", insertedId}}).Decode(&insertedChat)
-		if err != nil {
-			log.Println(err)
-			c.JSON(http.StatusInternalServerError, gin.H{"error": "err while retreving inserted chat"})
+		var createdChat []bson.M
+
+		matchStage := bson.D{
+			{
+				"$match", bson.D{
+					{"_id", insertedId},
+				},
+			},
 		}
 
-		c.JSON(http.StatusOK, insertedChat)
+		lookupStage := bson.D{
+			{
+				"$lookup", bson.D{
+					{"from", "user"},
+					{"localField", "users"},
+					{"foreignField", "_id"},
+					{"as", "users"},
+				},
+			},
+		}
+
+		projectStage := bson.D{
+			{
+				"$project", bson.D{
+					{"users.created_at", 0},
+					{"users.updated_at", 0},
+					{"users.password", 0},
+					{"created_at", 0},
+					{"updated_at", 0},
+				},
+			},
+		}
+
+		cursor, err := chatCollection.Aggregate(ctx, mongo.Pipeline{matchStage, lookupStage, projectStage})
+		if err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{"error": "err while retreving created chat"})
+			log.Println(err)
+		}
+
+		if err := cursor.All(ctx, &createdChat); err != nil {
+			log.Panic(err)
+		}
+		c.JSON(http.StatusOK, createdChat[0])
 	}
 }
 
