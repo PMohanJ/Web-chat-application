@@ -42,14 +42,20 @@ const SideDrawer = () => {
           }
         }
       )
-      if (!chats.find((c) => c._id === data.id)) {
+      console.log(data);
+      if (!chats) {
+          setChats([data]);
+      }
+      else if (!chats.find((c) => c._id === data._id)) {
         setChats([data, ...chats]);
       }
+
       setLoading(false);
       setSelectedChat(data)
-      console.log(data);
+      
       onClose();
     } catch (error){
+        console.log(error)
         toast({
           title: "Error while adding users",
           duration: 5000,
@@ -183,7 +189,7 @@ const SideDrawer = () => {
             
             {searchResults? searchResults.map((item) =>(
                 <UserSearchProfile key={item._id} user={item} handleFunction={() => getSelectedUserChat(item._id)}/>
-            )):{}}
+            )): null}
            
           </DrawerBody>
         </DrawerContent>
