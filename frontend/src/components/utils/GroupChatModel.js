@@ -194,12 +194,13 @@ const GroupChatModel = ({children}) => {
           {loading ? 
             <Spinner/>
             : <Stack w="100%">
-                { searchResults?.slice(0,4).map((user) => (
-                    <UserSearchProfile 
-                        key={user._id}
-                        handleFunction={() => handleGroup(user)}
-                        user={user}
-                    />
+                { searchResults?.slice(0,4).map((u) => (
+                    u._id !== user._id ? 
+                      (<UserSearchProfile 
+                          key={u._id}
+                          handleFunction={() => handleGroup(u)}
+                          user={u}
+                    />): null
                 )) }
               </Stack>
           }
