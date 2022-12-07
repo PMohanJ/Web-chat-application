@@ -33,6 +33,7 @@ const GroupChatModel = ({children}) => {
 
     const {user, chats, setChats} = ChatState();
 
+    // handleSearch retrieves the users that match the search query
     const handleSearch = async(name) => {
       let query = name.trim() 
       if (!query) {
@@ -52,7 +53,7 @@ const GroupChatModel = ({children}) => {
         )
         
         console.log(data)
-        setSearchResults(data)
+        setSearchResults(data.filter((u) => u._id !== user._id))
         setLoading(false)
 
       } catch (error) {
@@ -68,6 +69,7 @@ const GroupChatModel = ({children}) => {
         }
     };
 
+    // handleGroup adds the users to selectedUsers list while creating the groupchat
     const  handleGroup = (userToAdd) => {
         if (selectedUsers.includes(userToAdd)) {
             toast({
@@ -87,6 +89,7 @@ const GroupChatModel = ({children}) => {
         setSelectedUsers(selectedUsers.filter((sel) => sel._id !== user._id))
     }
 
+    // handleSubmit creates the groupchat with given details
     const handleSubmit = async() => {
       if (!groupName || !selectedUsers) {
         toast({
@@ -194,14 +197,13 @@ const GroupChatModel = ({children}) => {
           {loading ? 
             <Spinner/>
             : <Stack w="100%">
-                { searchResults?.slice(0,4).map((u) => (
-                    u._id !== user._id ? 
-                      (<UserSearchProfile 
-                          key={u._id}
-                          handleFunction={() => handleGroup(u)}
-                          user={u}
-                    />): null
-                )) }
+                { searchResults?.slice(0, 4).map((u) => (
+                    <UserSearchProfile 
+                        key={u._id}
+                        handleFunction={() => handleGroup(u)}
+                        user={u}
+                    /> 
+                  )) }
               </Stack>
           }
         </ModalBody>
