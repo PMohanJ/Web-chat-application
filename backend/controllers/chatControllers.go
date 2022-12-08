@@ -95,10 +95,10 @@ func AddOChatUser() gin.HandlerFunc {
 				log.Printf("docu: %+v", docu)
 			}
 
-			c.JSON(http.StatusOK, res)
+			c.JSON(http.StatusOK, res[0])
 			return
 		} else if errors.Is(err, mongo.ErrNoDocuments) {
-			log.Println("Panic...., no docs")
+			log.Println("Chat does't exist")
 
 		} else if err != nil {
 			c.JSON(http.StatusInternalServerError, gin.H{"error": "Erroe while checking db"})
