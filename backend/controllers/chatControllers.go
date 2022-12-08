@@ -568,6 +568,8 @@ func DeleteUserFromGroupChat() gin.HandlerFunc {
 
 }
 
+// UserExitGroup removes a user from Group chat or deletes the whole
+// chat if admin of that group is exiting
 func UserExitGroup() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		var reqData map[string]interface{}
@@ -595,10 +597,32 @@ func UserExitGroup() gin.HandlerFunc {
 
 		filter := bson.D{{"_id", chatId}}
 
-		update := bson.D{{"$pull", bson.D{{"users", userId}}}}
-
 		ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
 		defer cancel()
+
+		var chatDocu bson.M
+		err = chatCollection.FindOne(ctx, filter).Decode(&chatDocu)
+		if err != nil {
+			log.Panic(err)
+		}
+
+		groupAdmin := chatDocu["groupAdmin"].(primitive.ObjectID)
+
+		// check if admin in exiting Group chat
+		if userId.Hex() == groupAdmin.Hex() {
+			// delete the whole chat
+			deleteResult, err := chatCollection.DeleteOne(ctx, filter)
+			if err != nil {
+				c.JSON(http.StatusInternalServerError, gin.H{"error": "Error while querying database"})
+				log.Panic(err)
+			}
+			log.Println("No of docs deleted: ", deleteResult.DeletedCount)
+			c.JSON(http.StatusOK, gin.H{"message": "Exited from group"})
+			return
+		}
+
+		// just remove the user from Group chat
+		update := bson.D{{"$pull", bson.D{{"users", userId}}}}
 
 		res, err := chatCollection.UpdateOne(ctx, filter, update)
 		if err != nil {
