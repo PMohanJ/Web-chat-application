@@ -49,12 +49,12 @@ const SideDrawer = () => {
       }
       else if (!chats.find((c) => c._id === data._id)) {
         setChats([data, ...chats]);
+        console.log("added")
       }
 
       setLoading(false);
-      setSelectedChat(data)
-      
-      onClose();
+      setSelectedChat(data);
+      restoreToDefault();
     } catch (error){
         console.log(error)
         toast({
@@ -107,6 +107,13 @@ const SideDrawer = () => {
         });
         setLoading(false);
     }
+  }
+
+   // clearout the searchResults 
+   const restoreToDefault = () => {
+    setSearchResults([]);
+    setSearch("");
+    onClose();
   }
 
   return (
@@ -162,7 +169,7 @@ const SideDrawer = () => {
       <Drawer
         isOpen={isOpen}
         placement='left'
-        onClose={onClose}
+        onClose={restoreToDefault}
       >
         <DrawerOverlay />
         <DrawerContent>
@@ -197,7 +204,7 @@ const SideDrawer = () => {
            
           </DrawerBody>
         </DrawerContent>
-      </Drawer>
+      </Drawer> 
     </div>
   )
 }

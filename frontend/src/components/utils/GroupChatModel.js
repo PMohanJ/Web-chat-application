@@ -129,7 +129,7 @@ const GroupChatModel = ({children}) => {
 
         console.log(data);
         setChats([data, ...chats]);
-        onClose();
+        restoreToDefault();
       } catch (error) {
           toast({
             title: "Failed to Create the Chat!",
@@ -142,11 +142,18 @@ const GroupChatModel = ({children}) => {
       }
     };
 
+  // clearout the searchResults 
+  const restoreToDefault = () => {
+    setSearchResults([]);
+    setSearch("");
+    onClose();
+  }
+
    return (
     <>
     <span onClick={onOpen}>{children}</span>
 
-    <Modal isOpen={isOpen} onClose={onClose} isCentered>
+    <Modal isOpen={isOpen} onClose={restoreToDefault} isCentered>
       <ModalOverlay />
       <ModalContent>
         <ModalHeader
