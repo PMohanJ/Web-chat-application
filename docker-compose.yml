@@ -3,6 +3,7 @@ version: "3.8"
 services:
   backend-go:
     build: ./backend
+    image: mohanj7/chat-app-backend:1.0.0
     ports:
       - "8000:8000"
     env_file:
@@ -11,6 +12,7 @@ services:
       - comm
   frontend-react:
     build: ./frontend
+    image: mohanj7/chat-app-frontend:1.0.0
     ports:
       - "3000:80"
     networks:
