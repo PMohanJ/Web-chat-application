@@ -5,7 +5,7 @@ persistent as we're using mongodb atlas database service to store user login inf
 
 ## Motivation
 
-- To explore web technologies and to gain hands-on experience of building a full-stack application.
+- To explore web technologies and to gain hands-on experience of building a full-stack application and containerizing it.
 
 ## Features
 
@@ -29,16 +29,16 @@ persistent as we're using mongodb atlas database service to store user login inf
 
 |                                              |                                        |
 | -------------------------------------------- | -------------------------------------- |
-| ![login](./screenshots/login.png)            | ![signup](./screenshots/signup.png)    |
-| ![chat](./screenshots/chat_page.png)         | ![p2pchat](./screenshots/p2p_chat.png) |
-| ![usersearch](./screenshots/user_search.png) |                                        |
+| ![login](https://res.cloudinary.com/dkqc4za4f/image/upload/v1670583518/login_o9r9bz.png)            | ![signup](https://res.cloudinary.com/dkqc4za4f/image/upload/v1670583574/signup_xdkxh3.png)    |
+| ![chat](https://res.cloudinary.com/dkqc4za4f/image/upload/v1670583610/chat_page_tbo2vn.png)         | ![p2pchat](https://res.cloudinary.com/dkqc4za4f/image/upload/v1670583628/p2p_chat_jzwlyq.png) |
+| ![usersearch](https://res.cloudinary.com/dkqc4za4f/image/upload/v1670583648/user_search_kezpv3.png) |                                        |
 
 ### Prerequisites
 
 - [Go](https://go.dev/dl/)
 - [Node JS](https://nodejs.org/en/download/)
 - [MongoDB Atlas](https://www.mongodb.com/cloud/atlas/register)
-  > Note: Check out the [Get Started](https://www.mongodb.com/docs/atlas/getting-started/) guide by [MongoDB Atlas](https://www.mongodb.com/docs/atlas/) to set up the your atlas account, of course they have free tire.
+  > Note: Check out the [Get Started](https://www.mongodb.com/docs/atlas/getting-started/) guide by [MongoDB Atlas](https://www.mongodb.com/docs/atlas/) to set up your atlas account; of course they have free tire too.
 - [Docker](https://www.docker.com/products/docker-desktop/) and [Docker Compose](https://docker-docs.netlify.app/compose/install/) if following docker setup
 
 ## Local Setup
@@ -68,7 +68,7 @@ docker-compose pull
 5. Create and run the services
 
 ```
-docker-compose up    # up creates and starts containers
+docker-compose up    # up command creates and starts containers
 ```
 
 > Note: The above command pulls the images from docker hub. If you want to run application with your modification, just remove/change the _image_ key field in the frontend and backend services of [docker-compose](./docker-compose.yml) file
@@ -114,10 +114,10 @@ go run main.go
 
 ## Todo
 
-- [] Provide an option to delete the chat conversation of users
-- [] Provide an option to delete and edit a message
+- [ ] Provide an option to remove an user from his/her chats
+- [ ] Provide an option to delete and edit a message
 
 ## Further Development
 
 - To add notification feature to alert user upon receiving new messages
-- To provide typing indication to the receiver when the sender is a typing message
+- To provide typing indication to the receiver when the sender is typing message
