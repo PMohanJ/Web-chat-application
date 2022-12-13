@@ -45,22 +45,35 @@ persistent as we're using mongodb atlas database service to store user login inf
 
 _Docker setup_
 
-1. For docker setup, ensure **docker** and **docker-compose** are installed.
+1. For docker setup, ensure **docker** and **docker-compose** are installed
 
-2. Now replace the environment variables of .env file under backend directory as mentioned
-
-```
-MONGODB_URL = "mongodb+srv://mohanj:<password>@cluster0.f2pstnw.mongodb.net/?retryWrites=true&w=majority"
-# replace the above with your mongodb cloud URL
-
-SECRET_KEY = "replacethiswithyourownsecretkey"
-```
-
-3. Build the images and spin up the containers
+2. Clone the respository
 
 ```
-docker-compose up   #up command builds and runs the images
+git clone https://github.com/PMohanJ/Web-chat-application.git
 ```
+
+3. Change directory to application
+
+```
+cd Web-chat-application
+```
+
+4. Run the below command to pull the images
+
+```
+docker-compose pull
+```
+
+5. Create and run the services
+
+```
+docker-compose up    # up creates and starts containers
+```
+
+> Note: The above command pulls the images from docker hub. If you want to run application with your modification, just remove/change the _image_ key field in the frontend and backend services of [docker-compose](./docker-compose.yml) file
+
+<br/>
 
 _Non Docker Setup_
 
