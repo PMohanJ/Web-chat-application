@@ -6,7 +6,6 @@ import (
 	"os"
 	"time"
 
-	"github.com/joho/godotenv"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
 )
@@ -15,10 +14,6 @@ import (
 var Client *mongo.Client
 
 func DBinstance() {
-	err := godotenv.Load(".env")
-	if err != nil {
-		log.Fatal("Error loading env variables ", err)
-	}
 
 	MongoDBURL := os.Getenv("MONGODB_URL")
 	serverAPIOptions := options.ServerAPI(options.ServerAPIVersion1)

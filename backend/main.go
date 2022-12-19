@@ -1,16 +1,23 @@
 package main
 
 import (
+	"log"
 	"time"
 
 	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
+	"github.com/joho/godotenv"
 	"github.com/pmohanj/web-chat-app/database"
 	"github.com/pmohanj/web-chat-app/routes"
 	"github.com/pmohanj/web-chat-app/websocket"
 )
 
 func main() {
+	err := godotenv.Load(".env")
+	if err != nil {
+		log.Fatal("Error loading env variables ", err)
+	}
+
 	r := gin.Default()
 
 	// Initiate Databse

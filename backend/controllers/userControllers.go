@@ -141,7 +141,7 @@ func SearchUsers() gin.HandlerFunc {
 
 		cursor, err := userCollection.Find(ctx, filter)
 		if err != nil && errors.Is(err, mongo.ErrNoDocuments) {
-			c.JSON(http.StatusOK, gin.H{"error": "no users found"})
+			c.Status(http.StatusOK)
 			return
 		}
 
