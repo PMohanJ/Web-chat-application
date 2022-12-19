@@ -1,12 +1,10 @@
-import React from 'react'
-import { Search2Icon } from '@chakra-ui/icons'
+import React, { useState } from 'react'
+import { Input, useDisclosure, Drawer, DrawerBody, DrawerOverlay, DrawerContent, Spinner } from '@chakra-ui/react'
 import { Tooltip, Box, Button, Text, DrawerHeader, useToast } from '@chakra-ui/react';
 import { Menu, MenuButton, MenuList, MenuItem, Avatar} from '@chakra-ui/react'
-import { ChevronDownIcon, BellIcon } from '@chakra-ui/icons'
-import { useState } from 'react';
+import { ChevronDownIcon, BellIcon, Search2Icon } from '@chakra-ui/icons'
 import { ChatState } from '../../context/ChatProvider';
 import { useNavigate } from 'react-router-dom';
-import { Input, useDisclosure, Drawer, DrawerBody, DrawerOverlay, DrawerContent, Spinner } from '@chakra-ui/react'
 import Profile from './Profile';
 import axios from "axios"
 import UserSearchProfile from '../utils/UserSearchProfile'
@@ -88,18 +86,28 @@ const SideDrawer = () => {
       const { data } = await axios.get(url,
         {
           headers: {
-            "Content-Type":"application/json",
+            "Content-Type": "application/json",
             "Authorization": `Bearer ${user.token}`
           }
         }
       );
-      console.log(data)
+
       setLoading(false);
-      setSearchResults(data.filter((u) => u._id !== user._id));
+      if (data === null || data === undefined) {
+        toast({
+          title: "No users found",
+          duration: 3000,
+          status: "warning",
+          isClosable: true,
+          position: "bottom-left",
+        });
+        return;
+      } else {
+        setSearchResults(data.filter((u) => u._id !== user._id));
+      }
     } catch (error) {
         toast({
-          title: "Error occured",
-          decreption: "Failed to load user data",
+          title: "Failed to load user data",
           duration: 3000,
           status: "warning",
           isClosable: true,
