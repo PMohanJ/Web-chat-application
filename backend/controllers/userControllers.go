@@ -21,19 +21,19 @@ func RegisterUser() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		var user models.User
 		if err := c.BindJSON(&user); err != nil {
-			c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+			c.JSON(http.StatusBadRequest, gin.H{"error": "error while decoding user data"})
+			log.Println(err)
 			return
 		}
 
 		if user.Pic == "" {
 			user.SetDefaultPic()
 		}
-		log.Printf("User data %+v", user)
 
 		var ctx, cancel = context.WithTimeout(context.Background(), 30*time.Second)
 		defer cancel()
 
-		// get the collection to perform query
+		// get the collection to perform querying
 		userCollection := database.OpenCollection(database.Client, "user")
 
 		// check if user is already resgistered
@@ -44,22 +44,22 @@ func RegisterUser() gin.HandlerFunc {
 
 		// if err is other than ErrNoDocuments, something wrong while querying
 		if err != nil && !errors.Is(err, mongo.ErrNoDocuments) {
-			c.JSON(http.StatusInternalServerError, gin.H{"error": "err occured while checking for user"})
+			c.JSON(http.StatusInternalServerError, gin.H{"error": "error while querying for user"})
 			log.Panic(err)
 		}
 
 		if temp.Email == user.Email {
-			c.JSON(http.StatusBadRequest, gin.H{"error": "You've alrady registered with this email"})
+			c.JSON(http.StatusBadRequest, gin.H{"error": "You've already registered with this email"})
 			return
 		}
 
-		// user doesn't exist in database, so register
+		// user doesn't exist in database, so register the user
 		hashedPassowrd := helpers.HashPassowrd(user.Password)
 		user.Password = hashedPassowrd
 
 		insId, err := userCollection.InsertOne(ctx, user)
 		if err != nil {
-			c.JSON(http.StatusInternalServerError, gin.H{"error": "err occured while registering the user"})
+			c.JSON(http.StatusInternalServerError, gin.H{"error": "error while registering the user"})
 			log.Panic(err)
 		}
 
@@ -80,15 +80,15 @@ func AuthUser() gin.HandlerFunc {
 
 		var user models.User
 		if err := c.BindJSON(&user); err != nil {
-			c.JSON(http.StatusBadRequest, gin.H{"error": "Err while decoing data"})
-			log.Printf("See the data: %+v", err)
+			c.JSON(http.StatusBadRequest, gin.H{"error": "error while decoding user data"})
+			log.Println(err)
 			return
 		}
 
 		ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
 		defer cancel()
 
-		// get the collection to perform query
+		// get the collection to perform querying
 		userCollection := database.OpenCollection(database.Client, "user")
 		var registeredUser models.UserResponse
 
@@ -98,12 +98,12 @@ func AuthUser() gin.HandlerFunc {
 			c.JSON(http.StatusNotFound, gin.H{"error": "User not registered"})
 			return
 		} else if err != nil {
-			c.JSON(http.StatusInternalServerError, gin.H{"error": "error while checking for user data"})
+			c.JSON(http.StatusInternalServerError, gin.H{"error": "error while querying user data"})
 			log.Panic(err)
 		}
 
-		log.Printf("UserResp form backed %+v", registeredUser)
-		// user exist, check password validation
+		log.Printf("user data from database %+v", registeredUser)
+		// user exist, check for password validation
 		errMsg, valid := helpers.VerifyPassword(registeredUser.Password, user.Password)
 		if !valid {
 			c.JSON(http.StatusUnauthorized, gin.H{"error": errMsg})
@@ -141,7 +141,7 @@ func SearchUsers() gin.HandlerFunc {
 
 		cursor, err := userCollection.Find(ctx, filter)
 		if err != nil && errors.Is(err, mongo.ErrNoDocuments) {
-			c.JSON(http.StatusNotFound, gin.H{"error": "err while checking for users"})
+			c.JSON(http.StatusNotFound, gin.H{"error": "error while querying for users"})
 			return
 		}
 
@@ -149,14 +149,10 @@ func SearchUsers() gin.HandlerFunc {
 		for cursor.Next(ctx) {
 			var temp models.UserResponse
 			if err := cursor.Decode(&temp); err != nil {
-				c.JSON(http.StatusInternalServerError, gin.H{"error": "error iterating cursor"})
-				log.Panic("error iterating cursor")
+				c.JSON(http.StatusInternalServerError, gin.H{"error": "error in the server"})
+				log.Panic(err)
 			}
 			results = append(results, temp)
-		}
-
-		for _, result := range results {
-			log.Printf("%+v", result)
 		}
 
 		c.JSON(http.StatusOK, results)
