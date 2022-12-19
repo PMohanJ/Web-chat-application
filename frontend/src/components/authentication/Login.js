@@ -29,8 +29,6 @@ const Login = () => {
       return;
     } 
 
-    console.log(email, password)
-
     try {
       // make a post request to backend with user credentials
       const { data } = await axios.post(
@@ -46,7 +44,6 @@ const Login = () => {
         }
       );
       
-      console.log(data);
       toast({
         title: "Login Successful",
         status: "success",
