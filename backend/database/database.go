@@ -35,3 +35,10 @@ func OpenCollection(client *mongo.Client, collectionName string) *mongo.Collecti
 	collection := client.Database("cluster0").Collection(collectionName)
 	return collection
 }
+
+func CloseDBinstance() {
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	defer cancel()
+
+	Client.Disconnect(ctx)
+}
