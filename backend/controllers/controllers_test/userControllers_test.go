@@ -3,8 +3,10 @@ package controllers__test
 import (
 	"bytes"
 	"encoding/json"
+	"log"
 	"net/http"
 	"net/http/httptest"
+	"os"
 	"testing"
 
 	"github.com/gin-gonic/gin"
@@ -14,11 +16,14 @@ import (
 	"github.com/pmohanj/web-chat-app/routes"
 )
 
-func TestAuthUser(t *testing.T) {
-	router := gin.Default()
+var router *gin.Engine
 
-	t.Setenv("MONGODB_URL", "mongodb+srv://mohanj:webchatapp01@cluster0.f2pstnw.mongodb.net/?retryWrites=true&w=majority")
-	t.Setenv("SECRET_KEY", "itsnotpossibletomanipulate000000")
+func TestMain(m *testing.M) {
+	router = gin.Default()
+
+	// setup necessary env variables
+	os.Setenv("MONGODB_URL", "mongodb+srv://mohanj:webchatapp01@cluster0.f2pstnw.mongodb.net/?retryWrites=true&w=majority")
+	os.Setenv("SECRET_KEY", "itsnotpossibletomanipulate000000")
 
 	// Initiate Databse
 	database.DBinstance()
@@ -26,6 +31,13 @@ func TestAuthUser(t *testing.T) {
 	// setup user routes
 	api := router.Group("/api")
 	routes.AddUserRoutes(api)
+
+	code := m.Run()
+	database.CloseDBinstance()
+	os.Exit(code)
+}
+
+func TestAuthUser(t *testing.T) {
 
 	t.Run("returns user deatils", func(t *testing.T) {
 		input := []byte(`{"email":"checking@gmail.com", "password":"haha123"}`)
@@ -118,17 +130,6 @@ func TestAuthUser(t *testing.T) {
 }
 
 func TestRegisterUser(t *testing.T) {
-	router := gin.Default()
-
-	t.Setenv("MONGODB_URL", "mongodb+srv://mohanj:webchatapp01@cluster0.f2pstnw.mongodb.net/?retryWrites=true&w=majority")
-	t.Setenv("SECRET_KEY", "itsnotpossibletomanipulate000000")
-
-	// Initiate Databse
-	database.DBinstance()
-
-	// setup user routes
-	api := router.Group("/api")
-	routes.AddUserRoutes(api)
 
 	t.Run("returns data decoding error", func(t *testing.T) {
 		// improperly structured json input
@@ -163,5 +164,23 @@ func TestRegisterUser(t *testing.T) {
 		if res["error"] != "You've already registered with this email" {
 			t.Error("Unexpected result: should return error, user already registered with this email")
 		}
+	})
+}
+
+func TestSearchUsers(t *testing.T) {
+
+	t.Run("returns no users found", func(t *testing.T) {
+		url := "/api/user/search?search=" + "uoaomaxoasvfa*#20"
+		log.Println(url)
+		request, _ := http.NewRequest("GET", url, nil)
+		request.Header.Set("Authorization", "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJJRCI6IjYzOGY1ZWRlMjUyODI2MjBmMDAwYzVmZiIsIk5hbWUiOiIiLCJFbWFpbCI6ImNoZWNraW5nQGdtYWlsLmNvbSIsImV4cCI6MTY3MTU0MDQxOSwiaWF0IjoxNjcxNDU0MDE5fQ.zCs9L_KDSiHL3Ozql_X237wB4Rxxo9OCc6FGJ8RGVmA")
+
+		response := httptest.NewRecorder()
+		router.ServeHTTP(response, request)
+
+		var res map[string]string
+		_ = json.NewDecoder(response.Body).Decode(&res)
+
+		assert.Equal(t, http.StatusOK, response.Code)
 	})
 }
