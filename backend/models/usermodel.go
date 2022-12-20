@@ -29,5 +29,5 @@ type UserResponse struct {
 }
 
 func (u *User) SetDefaultPic() {
-	u.Pic = "https://p.kindpng.com/picc/s/24-248253_user-profile-default-image-png-clipart-png-download.png"
+	u.Pic = "https://res.cloudinary.com/dkqc4za4f/image/upload/v1671523788/default_toic85.png"
 }
