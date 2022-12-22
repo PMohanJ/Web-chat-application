@@ -23,8 +23,11 @@ func TestMain(m *testing.M) {
 	router = gin.Default()
 
 	// setup necessary env variables
-	os.Setenv("MONGODB_URL", "mongodb+srv://mohanj:webchatapp01@cluster0.f2pstnw.mongodb.net/?retryWrites=true&w=majority")
-	os.Setenv("SECRET_KEY", "itsnotpossibletomanipulate000000")
+	// replace the below env variables with yours
+	var MONGODB_URL string = "mongodb+srv://mohanj:<password>@cluster0.f2pstnw.mongodb.net/?retryWrites=true&w=majority"
+	var SECRET_KEY string = "replacethiswithyourownsecretkey"
+	os.Setenv("MONGODB_URL", MONGODB_URL)
+	os.Setenv("SECRET_KEY", SECRET_KEY)
 
 	// Initiate Databse
 	database.DBinstance()
