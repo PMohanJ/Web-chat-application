@@ -114,7 +114,7 @@ go run main.go
 
 ## Todo
 
-- [ ] Provide an option to remove an user from his/her chats
+- [x] Provide an option to remove an user from his/her chats
 - [ ] Provide an option to delete and edit a message
 
 ## Further Development
