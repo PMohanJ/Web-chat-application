@@ -1,13 +1,12 @@
 import React, { useEffect, useState } from 'react'
-import { Box, Text, Icon, IconButton, Spinner, FormControl, Input, useToast, Container } from '@chakra-ui/react'
-import {InfoIcon} from '@chakra-ui/icons'
+import { Box, Text, Icon, IconButton, Spinner, FormControl, Input, useToast, MenuButton, MenuList, MenuItem, Menu } from '@chakra-ui/react'
+import { SettingsIcon } from '@chakra-ui/icons'
 import { ChatState } from '../../context/ChatProvider';
 import { ArrowBackIcon } from '@chakra-ui/icons'
 import Profile from '../Header/Profile';
 import UpdateGroupChat from '../utils/UpdateGroupChat';
 import axios from 'axios'
 import MessagesComp from './MessagesComp';
-import { json } from 'react-router-dom';
 
 var socket = new WebSocket('ws://localhost:8000/api/ws')
 
@@ -54,11 +53,43 @@ const Chat = ({fetchAgain, setFetchAgain}) => {
       } catch (error) {
           toast({
             title: "Failed to send message",
-            duration: 5000,
+            status: "error",
+            duration: 4000,
             isClosable: true,
             position: "botton",
           })
       }
+    }
+  }
+
+  const deleteConversation = async(chatId) => {
+    try {
+      const url = `http://localhost:8000/api/message/${chatId}`
+      const _ = await axios.delete(url, 
+        {
+          headers: {
+            "Content-Type" : "application/json",
+            "Authorization": `Bearer ${user.token}`
+          }
+        }
+      )
+      setSelectedChat("");
+      setFetchAgain(!fetchAgain);
+      toast({
+        title: "Chat deleted successfully",
+        status: "success",
+        duration: 4000,
+        isClosable: true,
+        position: "botton",
+      });
+    } catch (error) {
+        toast({
+          title: "Failed to delete chat",
+          status: "error",
+          duration: 4000,
+          isClosable: true,
+          position: "botton",
+        });
     }
   }
 
@@ -87,7 +118,8 @@ const Chat = ({fetchAgain, setFetchAgain}) => {
     } catch (error) {
         toast({
           title: "Failed to load messages",
-          duration: 5000,
+          status: "error",
+          duration: 4000,
           isClosable: true,
           position: "botton",
         })
@@ -158,14 +190,21 @@ const Chat = ({fetchAgain, setFetchAgain}) => {
         </Text>
 
         {!selectedChat.isGroupChat? 
-            <Profile user={getSenderObj(selectedChat)}>
-              <Icon icon={<InfoIcon />}
-                display="flex"
-              />
-            </Profile>
+            <div>
+              <Menu>
+                <MenuButton as={IconButton} icon={<SettingsIcon/>} />
+                <MenuList minWidth="150px" >
+                  <Profile user={getSenderObj(selectedChat)}>
+                    <MenuItem>User Profile</MenuItem>
+                  </Profile>
+                  <MenuItem onClick={() => {window.confirm("Sure you want to delete user, all conversation will be lost?") 
+                                                    && deleteConversation(selectedChat._id)} }>Delete</MenuItem>
+                </MenuList>
+              </Menu>
+            </div>
             : 
             <UpdateGroupChat fetchAgain={fetchAgain} setFetchAgain={setFetchAgain}>
-              <Icon icon={<InfoIcon />}
+               <Icon icon={<SettingsIcon/>}
                 display="flex"
               />
             </UpdateGroupChat>
