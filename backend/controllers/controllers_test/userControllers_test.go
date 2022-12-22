@@ -1,4 +1,4 @@
-package controllers__test
+package controllers_test
 
 import (
 	"bytes"
@@ -17,6 +17,7 @@ import (
 )
 
 var router *gin.Engine
+var tempToken = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJJRCI6IjYzOGY1ZWRlMjUyODI2MjBmMDAwYzVmZiIsIk5hbWUiOiIiLCJFbWFpbCI6ImNoZWNraW5nQGdtYWlsLmNvbSIsImV4cCI6MTY3MTcxNjQ1OCwiaWF0IjoxNjcxNjMwMDU4fQ.tY-pU9duArH5Iq_wX6sChfbGhttqcj3U0VVzalZ8Vs0"
 
 func TestMain(m *testing.M) {
 	router = gin.Default()
@@ -31,6 +32,7 @@ func TestMain(m *testing.M) {
 	// setup user routes
 	api := router.Group("/api")
 	routes.AddUserRoutes(api)
+	routes.AddMessageRoutes(api)
 
 	code := m.Run()
 	database.CloseDBinstance()
@@ -173,7 +175,7 @@ func TestSearchUsers(t *testing.T) {
 		url := "/api/user/search?search=" + "uoaomaxoasvfa*#20"
 		log.Println(url)
 		request, _ := http.NewRequest("GET", url, nil)
-		request.Header.Set("Authorization", "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJJRCI6IjYzOGY1ZWRlMjUyODI2MjBmMDAwYzVmZiIsIk5hbWUiOiIiLCJFbWFpbCI6ImNoZWNraW5nQGdtYWlsLmNvbSIsImV4cCI6MTY3MTU0MDQxOSwiaWF0IjoxNjcxNDU0MDE5fQ.zCs9L_KDSiHL3Ozql_X237wB4Rxxo9OCc6FGJ8RGVmA")
+		request.Header.Set("Authorization", "Bearer "+tempToken)
 
 		response := httptest.NewRecorder()
 		router.ServeHTTP(response, request)
