@@ -173,3 +173,29 @@ func GetMessages() gin.HandlerFunc {
 		c.JSON(http.StatusOK, results)
 	}
 }
+
+func DeleteUserMessage() gin.HandlerFunc {
+	return func(c *gin.Context) {
+		mId := c.Param("messageId")
+
+		messageId, err := primitive.ObjectIDFromHex(mId)
+		if err != nil {
+			log.Panic(err)
+		}
+
+		messageCollection := database.OpenCollection(database.Client, "message")
+
+		ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
+		defer cancel()
+
+		deleteRes, err := messageCollection.DeleteOne(ctx, bson.D{{"_id", messageId}})
+		if err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{"error": "Error while deleting message"})
+			log.Panic(err)
+		}
+
+		log.Println("Delete the msg: ", deleteRes.DeletedCount)
+
+		c.Status(http.StatusOK)
+	}
+}
