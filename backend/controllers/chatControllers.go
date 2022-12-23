@@ -242,6 +242,41 @@ func GetUserChats() gin.HandlerFunc {
 	}
 }
 
+func DeleteUserConversation() gin.HandlerFunc {
+	return func(c *gin.Context) {
+		cId := c.Param("chatId")
+		chatId, err := primitive.ObjectIDFromHex(cId)
+		if err != nil {
+			log.Panic(err)
+		}
+
+		ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
+		defer cancel()
+
+		// delete all the message that refer the chatId
+		messageCollection := database.OpenCollection(database.Client, "message")
+
+		filter := bson.D{
+			{"chat", chatId},
+		}
+		_, err = messageCollection.DeleteMany(ctx, filter)
+		if err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{"error": "Error while deleting chat messages"})
+			log.Panic(err)
+		}
+
+		// delete the chat document too
+		chatCollection := database.OpenCollection(database.Client, "chat")
+		_, err = chatCollection.DeleteOne(ctx, bson.D{{"_id", chatId}})
+		if err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{"error": "Error while deleting chat document"})
+			log.Panic(err)
+		}
+
+		c.Status(http.StatusOK)
+	}
+}
+
 func CreateGroupChat() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		var groupData map[string]interface{}
