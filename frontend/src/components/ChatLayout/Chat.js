@@ -64,7 +64,7 @@ const Chat = ({fetchAgain, setFetchAgain}) => {
 
   const deleteConversation = async(chatId) => {
     try {
-      const url = `http://localhost:8000/api/message/${chatId}`
+      const url = `http://localhost:8000/api/chat/${chatId}`
       const _ = await axios.delete(url, 
         {
           headers: {
@@ -114,7 +114,7 @@ const Chat = ({fetchAgain, setFetchAgain}) => {
       }
      
       sendmessage(JSON.stringify({"messageType":"setup", "chat": selectedChat._id}))
-
+    
     } catch (error) {
         toast({
           title: "Failed to load messages",
@@ -226,7 +226,7 @@ const Chat = ({fetchAgain, setFetchAgain}) => {
         {loading? 
           (<Spinner size="lg" alignSelf="center" margin="auto"/>)
             : <div style={{ display:"flex", flexDirection:"column-reverse", overflowY:"auto", padding: "3px"}}>
-                <MessagesComp messages={messages} />
+                <MessagesComp messages={messages} setMessages={setMessages}/>
               </div>}
 
         <FormControl onKeyDown={sendMessage} isRequired mt={3} marginTop="auto" marginBottom={1}>
