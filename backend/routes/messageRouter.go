@@ -11,5 +11,6 @@ func AddMessageRoutes(router *gin.RouterGroup) {
 
 	messageRouter.POST("/", middleware.Authenticate(), controllers.SendMessage())
 	messageRouter.GET("/:chatId", middleware.Authenticate(), controllers.GetMessages())
+	messageRouter.PUT("/", middleware.Authenticate(), controllers.EditUserMessage())
 	messageRouter.DELETE("/:messageId", middleware.Authenticate(), controllers.DeleteUserMessage())
 }
