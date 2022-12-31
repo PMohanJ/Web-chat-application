@@ -4,7 +4,7 @@ import { ChatState } from '../../context/ChatProvider'
 import { isSenderTheLoggedInUser } from '../utils/messagesRendering'
 import axios from "axios"
 
-const MessagesComp = ({ messages, setMessages }) => {
+const MessagesComp = ({ messages, setMessages, handleEditMessage }) => {
     const {user} = ChatState();
     const toast = useToast();
   
@@ -63,13 +63,14 @@ const MessagesComp = ({ messages, setMessages }) => {
                 </MenuButton>
                 <MenuList minWidth="150px">
                   <MenuItem onClick={() => deleteMessage(m._id)}>Delete Message</MenuItem>
+                  <MenuItem onClick={() => handleEditMessage(m._id)}>Edit Message</MenuItem>
                 </MenuList>
               </Menu>
               /*<IconButton colorScheme="none" size="20px" 
                 icon={<ChevronDownIcon width="15px" color="blackAlpha.500"/>}
                 onClick={() => deleteMessage(m._id)}
               /> */
-              : null}
+              : <Text> {m.content} </Text>}
             </Box>
         </div>))}
     </>

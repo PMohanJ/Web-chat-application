@@ -15,7 +15,7 @@ const Chat = ({fetchAgain, setFetchAgain}) => {
   const [messages, setMessages] = useState([]);
   const [loading, setLoading] = useState(false);
   const [newMessage, setNewMessage] = useState("");
-  //const [socketConnection, setSocketConnection] = useState(false);
+  const [editingMessageId, setEditingMessageId] = useState("");
   const toast = useToast();
 
   function getSenderName(chat) {
@@ -31,9 +31,27 @@ const Chat = ({fetchAgain, setFetchAgain}) => {
     else 
       return chat.users[0];
   }
-  const sendMessage = async(event) => {
+
+  const handleEditMessage = (messageId) => {
+    setEditingMessageId(messageId);
+
+    // place the message in input element for user to edit 
+    setNewMessage(messages.find((objId) => objId._id===messageId).content);
+  }
+
+  const handleSendMessage = (event) => {
     if (event.key === "Enter" && newMessage) {
-      const content = newMessage.trim()
+      const content = newMessage.trim();
+      if (editingMessageId !== "") {
+        editMessage(content);
+        setEditingMessageId("");
+      } else {
+        sendMessage(content);
+      }
+    }
+  }
+
+  const sendMessage = async(content) => {
       try {
         const { data } = await axios.post("http://localhost:8000/api/message/", 
           {
@@ -57,9 +75,43 @@ const Chat = ({fetchAgain, setFetchAgain}) => {
             duration: 4000,
             isClosable: true,
             position: "botton",
-          })
+          });
       }
-    }
+  }
+
+  const editMessage = async(content) => {
+      try {
+        const { data } = await axios.put("http://localhost:8000/api/message/", 
+          {
+            content: content,
+            messageId: editingMessageId,
+          },
+          {
+            headers: {
+              "Content-Type": "application/json",
+              "Authorization": `Bearer ${user.token}`
+            }
+          }
+        )
+        // send the message to server, so that server will broadcast it
+        sendmessage(JSON.stringify(data));
+        toast({
+          title: "Message edited",
+          status: "success",
+          duration: 3000,
+          isClosable: true,
+          position: "top",
+        });
+        setNewMessage("");
+      } catch (error) {
+          toast({
+            title: "Failed to edit message",
+            status: "error",
+            duration: 4000,
+            isClosable: true,
+            position: "botton",
+          });
+      }
   }
 
   const deleteConversation = async(chatId) => {
@@ -113,7 +165,7 @@ const Chat = ({fetchAgain, setFetchAgain}) => {
         setMessages(data);
       }
      
-      sendmessage(JSON.stringify({"messageType":"setup", "chat": selectedChat._id}))
+      sendmessage(JSON.stringify({"messageType":"setup", "chat": selectedChat._id}));
     
     } catch (error) {
         toast({
@@ -122,7 +174,7 @@ const Chat = ({fetchAgain, setFetchAgain}) => {
           duration: 4000,
           isClosable: true,
           position: "botton",
-        })
+        });
         setLoading(false);
     }
   }
@@ -134,7 +186,18 @@ const Chat = ({fetchAgain, setFetchAgain}) => {
   }, [selectedChat])
   
   const addMessage = (msg) => {
-    setMessages([...messages, msg])
+    if (msg.isedited) {
+      let index = 0;
+      for(let i=0; i<messages.length; i++) {
+        if (messages[i]._id === msg._id){
+          index = i;
+          break;
+        }
+      }
+      setMessages([...messages.slice(0, index), msg, ...messages.slice(index+1, messages.length)]);
+      return;
+    }
+    setMessages([...messages, msg]);
   }
 
   const sendmessage = (msg) => {
@@ -151,8 +214,8 @@ const Chat = ({fetchAgain, setFetchAgain}) => {
     }
 
     socket.onmessage = (msg) => {
-        console.log(JSON.parse(msg.data))
-        addMessage(JSON.parse(msg.data))
+        console.log(JSON.parse(msg.data));
+        addMessage(JSON.parse(msg.data));
     }
 
     socket.onclose = (event) => {
@@ -226,10 +289,10 @@ const Chat = ({fetchAgain, setFetchAgain}) => {
         {loading? 
           (<Spinner size="lg" alignSelf="center" margin="auto"/>)
             : <div style={{ display:"flex", flexDirection:"column-reverse", overflowY:"auto", padding: "3px"}}>
-                <MessagesComp messages={messages} setMessages={setMessages}/>
+                <MessagesComp messages={messages} setMessages={setMessages} handleEditMessage={handleEditMessage}/>
               </div>}
 
-        <FormControl onKeyDown={sendMessage} isRequired mt={3} marginTop="auto" marginBottom={1}>
+        <FormControl onKeyDown={handleSendMessage} isRequired mt={3} marginTop="auto" marginBottom={1}>
           <Input 
             placeholder="Enter your text" 
             bg="#E0E0E0"
