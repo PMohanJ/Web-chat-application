@@ -114,6 +114,38 @@ const Chat = ({fetchAgain, setFetchAgain}) => {
       }
   }
 
+  const deleteMessage = async(messageId) => {
+    try {
+      const url = `http://localhost:8000/api/message/${messageId}`
+      const { data } = await axios.delete(url, 
+        {
+          headers: {
+            "Content-Type": "application/json",
+            "Authorization": `Bearer ${user.token}`
+          }
+        }
+      )
+
+      // send websocket server to delete this message on all active users chats
+      sendmessage(JSON.stringify({"_id":messageId, "delete": true, "chat": selectedChat._id}));
+      toast({
+        title: "Message deleted",
+        status: "success",
+        duration: 3000,
+        isClosable: true,
+        position: "top",
+      });
+    } catch (error) {
+      toast({
+        title: "Message not deleted",
+        status: "error",
+        duration: 4000,
+        isClosable: true,
+        position: "botton",
+      });
+    }
+  }
+
   const deleteConversation = async(chatId) => {
     try {
       const url = `http://localhost:8000/api/chat/${chatId}`
@@ -164,9 +196,8 @@ const Chat = ({fetchAgain, setFetchAgain}) => {
       } else {
         setMessages(data);
       }
-     
+
       sendmessage(JSON.stringify({"messageType":"setup", "chat": selectedChat._id}));
-    
     } catch (error) {
         toast({
           title: "Failed to load messages",
@@ -186,18 +217,21 @@ const Chat = ({fetchAgain, setFetchAgain}) => {
   }, [selectedChat])
   
   const addMessage = (msg) => {
-    if (msg.isedited) {
-      let index = 0;
-      for(let i=0; i<messages.length; i++) {
-        if (messages[i]._id === msg._id){
-          index = i;
-          break;
-        }
-      }
-      setMessages([...messages.slice(0, index), msg, ...messages.slice(index+1, messages.length)]);
-      return;
+    if (msg.delete) {
+      setMessages(messages.filter((obj)=> obj._id !== msg._id));
     }
-    setMessages([...messages, msg]);
+    else if (msg.isedited) {
+      let index = 0;
+        for(let i=0; i<messages.length; i++) {
+          if (messages[i]._id === msg._id){
+            index = i;
+            break;
+          }
+        }
+        setMessages([...messages.slice(0, index), msg, ...messages.slice(index+1, messages.length)]);
+    } else {
+      setMessages([...messages, msg]);
+    }
   }
 
   const sendmessage = (msg) => {
@@ -214,7 +248,6 @@ const Chat = ({fetchAgain, setFetchAgain}) => {
     }
 
     socket.onmessage = (msg) => {
-        console.log(JSON.parse(msg.data));
         addMessage(JSON.parse(msg.data));
     }
 
@@ -289,7 +322,7 @@ const Chat = ({fetchAgain, setFetchAgain}) => {
         {loading? 
           (<Spinner size="lg" alignSelf="center" margin="auto"/>)
             : <div style={{ display:"flex", flexDirection:"column-reverse", overflowY:"auto", padding: "3px"}}>
-                <MessagesComp messages={messages} setMessages={setMessages} handleEditMessage={handleEditMessage}/>
+                <MessagesComp messages={messages} deleteMessage={deleteMessage} handleEditMessage={handleEditMessage}/>
               </div>}
 
         <FormControl onKeyDown={handleSendMessage} isRequired mt={3} marginTop="auto" marginBottom={1}>

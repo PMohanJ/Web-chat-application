@@ -1,42 +1,10 @@
-import { IconButton, Button, Text, Box, useToast, Menu, MenuButton, MenuList, MenuItem } from '@chakra-ui/react'
+import { Text, Box, useToast, Menu, MenuButton, MenuList, MenuItem } from '@chakra-ui/react'
 import React from 'react'
 import { ChatState } from '../../context/ChatProvider'
 import { isSenderTheLoggedInUser } from '../utils/messagesRendering'
-import axios from "axios"
 
-const MessagesComp = ({ messages, setMessages, handleEditMessage }) => {
+const MessagesComp = ({ messages, deleteMessage, handleEditMessage }) => {
     const {user} = ChatState();
-    const toast = useToast();
-  
-    const deleteMessage = async(messageId) => {
-      try {
-        const url = `http://localhost:8000/api/message/${messageId}`
-        const { data } = await axios.delete(url, 
-          {
-            headers: {
-              "Content-Type": "application/json",
-              "Authorization": `Bearer ${user.token}`
-            }
-          }
-        )
-        setMessages(messages.filter((obj)=> obj._id != messageId))
-        toast({
-          title: "Message deleted",
-          status: "success",
-          duration: 4000,
-          isClosable: true,
-          position: "botton",
-        });
-      } catch (error) {
-        toast({
-          title: "Message not deleted",
-          status: "error",
-          duration: 4000,
-          isClosable: true,
-          position: "botton",
-        });
-      }
-    }
 
     // reversing the order of msg, so that bottom location
     // is prioritized as needed for chatting
