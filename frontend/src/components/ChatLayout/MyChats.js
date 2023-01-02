@@ -11,8 +11,7 @@ const MyChats = ({ fetchAgain }) => {
 
   const fetchChats = async() => {
     try {
-      const url = `http://localhost:8000/api/chat/${user._id}`
-      const { data } = await axios.get(url, 
+      const { data } = await axios.get(`/api/chat/${user._id}`, 
         {
           headers: {
             "Content-Type": "application/json",
@@ -59,7 +58,6 @@ const MyChats = ({ fetchAgain }) => {
         justifyContent="space-between"
         fontSize={"3xl"}
         fontFamily="-moz-initial"
-
       >
         <Text>Chats</Text>
 

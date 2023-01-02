@@ -53,7 +53,7 @@ const Signup = () => {
       const { data } = await axios.post(
         // As the backend is developed using gin package, the trailing spaces
         // maters, so be cautious with it..
-        "http://localhost:8000/api/user/", 
+        "/api/user/", 
         { 
           name: name, 
           email:email, 

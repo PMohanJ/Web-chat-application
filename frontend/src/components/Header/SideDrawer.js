@@ -29,8 +29,7 @@ const SideDrawer = () => {
   const getSelectedUserChat = async(userId)=> {
     try {
       setLoading(true);
-
-      const {data} = await axios.post("http://localhost:8000/api/chat/",
+      const {data} = await axios.post("/api/chat/",
         {
           userToBeAdded: userId
         },
@@ -81,9 +80,7 @@ const SideDrawer = () => {
 
     try {
       setLoading(true);
-
-      const url = `http://localhost:8000/api/user/search?search=${search}`
-      const { data } = await axios.get(url,
+      const { data } = await axios.get(`/api/user/search?search=${search}`,
         {
           headers: {
             "Content-Type": "application/json",

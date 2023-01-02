@@ -33,7 +33,7 @@ const UpdateGroupChat = ({fetchAgain, setFetchAgain, children}) => {
     try {
       setLoading(true);
       
-      const { data } = await axios.put("http://localhost:8000/api/chat/grouprename",
+      const { data } = await axios.put("/api/chat/grouprename",
         {
           chatId: selectedChat._id,
           groupName: groupName,
@@ -92,7 +92,7 @@ const UpdateGroupChat = ({fetchAgain, setFetchAgain, children}) => {
     }
 
     try {
-      const { data } = await axios.put("http://localhost:8000/api/chat/groupadd",
+      const { data } = await axios.put("/api/chat/groupadd",
         {
           chatId: selectedChat._id,
           userId: userToBeAdd._id,
@@ -148,7 +148,7 @@ const UpdateGroupChat = ({fetchAgain, setFetchAgain, children}) => {
     }
 
     try {
-      const { data } = await axios.put("http://localhost:8000/api/chat/groupremove",
+      const { data } = await axios.put("/api/chat/groupremove",
         {
           chatId: selectedChat._id,
           userId: userToBeRemoved._id,
@@ -183,9 +183,7 @@ const UpdateGroupChat = ({fetchAgain, setFetchAgain, children}) => {
 
     try {
       setLoading(true);
-
-      const url = `http://localhost:8000/api/user/search?search=${search}`
-      const { data } = await axios.get(url,
+      const { data } = await axios.get(`/api/user/search?search=${search}`,
         {
           headers: {
             "Content-Type":"application/json",
@@ -213,7 +211,7 @@ const UpdateGroupChat = ({fetchAgain, setFetchAgain, children}) => {
   // hanldeExitGroup lets the user to exit from Group chat
   const handleExitGroup = async(userToExit) => {
     try {
-      const { data } = await axios.put("http://localhost:8000/api/chat/groupexit",
+      const { data } = await axios.put("/api/chat/groupexit",
         {
           chatId: selectedChat._id,
         },

@@ -8,7 +8,7 @@ import UpdateGroupChat from '../utils/UpdateGroupChat';
 import axios from 'axios'
 import MessagesComp from './MessagesComp';
 
-var socket = new WebSocket('ws://localhost:8000/api/ws')
+var socket = new WebSocket(`ws://${window.location.hostname}/api/ws`);
 
 const Chat = ({fetchAgain, setFetchAgain}) => {
   const {selectedChat, setSelectedChat, user} = ChatState();
@@ -53,7 +53,7 @@ const Chat = ({fetchAgain, setFetchAgain}) => {
 
   const sendMessage = async(content) => {
       try {
-        const { data } = await axios.post("http://localhost:8000/api/message/", 
+        const { data } = await axios.post("/api/message/", 
           {
             content: content,
             chatId: selectedChat._id,
@@ -81,7 +81,7 @@ const Chat = ({fetchAgain, setFetchAgain}) => {
 
   const editMessage = async(content) => {
       try {
-        const { data } = await axios.put("http://localhost:8000/api/message/", 
+        const { data } = await axios.put("/api/message/", 
           {
             content: content,
             messageId: editingMessageId,
@@ -116,8 +116,7 @@ const Chat = ({fetchAgain, setFetchAgain}) => {
 
   const deleteMessage = async(messageId) => {
     try {
-      const url = `http://localhost:8000/api/message/${messageId}`
-      const { data } = await axios.delete(url, 
+      const { data } = await axios.delete(`/api/message/${messageId}`, 
         {
           headers: {
             "Content-Type": "application/json",
@@ -148,8 +147,7 @@ const Chat = ({fetchAgain, setFetchAgain}) => {
 
   const deleteConversation = async(chatId) => {
     try {
-      const url = `http://localhost:8000/api/chat/${chatId}`
-      const _ = await axios.delete(url, 
+      const _ = await axios.delete(`/api/chat/${chatId}`, 
         {
           headers: {
             "Content-Type" : "application/json",
@@ -180,8 +178,7 @@ const Chat = ({fetchAgain, setFetchAgain}) => {
   const fetchMessages = async() => {
     try {
       setLoading(true);
-      const url = `http://localhost:8000/api/message/${selectedChat._id}`
-      const { data } = await axios.get(url, 
+      const { data } = await axios.get(`/api/message/${selectedChat._id}`, 
         {
           headers: {
             "Content-Type": "application/json",
@@ -241,7 +238,7 @@ const Chat = ({fetchAgain, setFetchAgain}) => {
   // need to handle the reconnection to socket if any interruption 
   // occured to websocket connection
   useEffect(() => {
-    window.client = socket 
+    window.client = socket;
 
     socket.onopen = () => {
       console.log("Successfully connected");

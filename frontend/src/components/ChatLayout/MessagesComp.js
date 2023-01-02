@@ -1,4 +1,4 @@
-import { Text, Box, useToast, Menu, MenuButton, MenuList, MenuItem } from '@chakra-ui/react'
+import { Text, Box, Menu, MenuButton, MenuList, MenuItem } from '@chakra-ui/react'
 import React from 'react'
 import { ChatState } from '../../context/ChatProvider'
 import { isSenderTheLoggedInUser } from '../utils/messagesRendering'
@@ -34,10 +34,6 @@ const MessagesComp = ({ messages, deleteMessage, handleEditMessage }) => {
                   <MenuItem onClick={() => handleEditMessage(m._id)}>Edit Message</MenuItem>
                 </MenuList>
               </Menu>
-              /*<IconButton colorScheme="none" size="20px" 
-                icon={<ChevronDownIcon width="15px" color="blackAlpha.500"/>}
-                onClick={() => deleteMessage(m._id)}
-              /> */
               : <Text> {m.content} </Text>}
             </Box>
         </div>))}

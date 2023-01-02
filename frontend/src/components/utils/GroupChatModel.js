@@ -42,8 +42,7 @@ const GroupChatModel = ({children}) => {
       setSearch(query)
       try {
         setLoading(true)
-        const url = "http://localhost:8000/api/user/search?search="+query.toString()
-        const { data } = await axios.get(url,
+        const { data } = await axios.get(`/api/user/search?search=${query}`,
           {
             headers:{
               "Content-Type": "application/json",
@@ -114,7 +113,7 @@ const GroupChatModel = ({children}) => {
       }
 
       try {
-        const { data } = await axios.post("http://localhost:8000/api/chat/group",
+        const { data } = await axios.post("/api/chat/group",
           {
             groupName: groupName,
             users: selectedUsers.map((u) => u._id)
