@@ -3,6 +3,7 @@ package controllers_test
 import (
 	"bytes"
 	"encoding/json"
+	"fmt"
 	"log"
 	"net/http"
 	"net/http/httptest"
@@ -14,9 +15,10 @@ import (
 func TestSendMessage(t *testing.T) {
 
 	t.Run("returns error decoding data", func(t *testing.T) {
-		input := []byte(`{"chatId""63a170642144fbd5881e1e1b", "content":"Hello there}`)
+		data := fmt.Sprintf(`{"chatId""%s", "content":"Hello there}`, chatId)
+		input := []byte(data)
 		request, _ := http.NewRequest("POST", "/api/message/", bytes.NewBuffer(input))
-		request.Header.Set("Authorization", "Bearer "+tempToken)
+		request.Header.Set("Authorization", "Bearer "+user1Token)
 
 		response := httptest.NewRecorder()
 		router.ServeHTTP(response, request)
@@ -25,20 +27,21 @@ func TestSendMessage(t *testing.T) {
 	})
 
 	t.Run("returns message object", func(t *testing.T) {
-		input := []byte(`{"chatId":"63a170642144fbd5881e1e1b", "content":"How are you bro"}`)
+		data := fmt.Sprintf(`{"chatId":"%s", "content":"How are you bro"}`, chatId)
+		input := []byte(data)
 		request, _ := http.NewRequest("POST", "/api/message/", bytes.NewBuffer(input))
-		request.Header.Set("Authorization", "Bearer "+tempToken)
+		request.Header.Set("Authorization", "Bearer "+user1Token)
 
 		response := httptest.NewRecorder()
 		router.ServeHTTP(response, request)
 
 		expected_res := map[string]interface{}{
 			"sender": []map[string]string{{
-				"name":  "Checking",
-				"email": "checking@gmail.com"},
+				"name":  "User1",
+				"email": "user1@gmail.com"},
 			},
 			"content": "How are you bro",
-			"chat":    "63a170642144fbd5881e1e1b",
+			"chat":    chatId,
 		}
 
 		var res map[string]interface{}
@@ -91,8 +94,8 @@ func TestSendMessage(t *testing.T) {
 func TestDeleteUserConversation(t *testing.T) {
 
 	t.Run("returns status ok", func(t *testing.T) {
-		request, _ := http.NewRequest("DELETE", "/api/message/63a170642144fbd5881e1e1b", nil)
-		request.Header.Set("Authorization", "Bearer "+tempToken)
+		request, _ := http.NewRequest("DELETE", "/api/message/"+chatId, nil)
+		request.Header.Set("Authorization", "Bearer "+user1Token)
 
 		response := httptest.NewRecorder()
 		router.ServeHTTP(response, request)
