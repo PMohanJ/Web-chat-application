@@ -2,6 +2,7 @@ package main
 
 import (
 	"log"
+	"os"
 	"time"
 
 	"github.com/gin-contrib/cors"
@@ -21,7 +22,8 @@ func main() {
 	r := gin.Default()
 
 	// Initiate Databse
-	database.DBinstance()
+	MongoDBURL := os.Getenv("MONGODB_URL")
+	database.DBinstance(MongoDBURL)
 
 	// Allows all origins, not suitable for prod environments
 	r.Use(cors.New(cors.Config{

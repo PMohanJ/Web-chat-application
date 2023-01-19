@@ -3,7 +3,6 @@ package database
 import (
 	"context"
 	"log"
-	"os"
 	"time"
 
 	"go.mongodb.org/mongo-driver/mongo"
@@ -13,9 +12,8 @@ import (
 // Clinet variable holds db instance and is accessable to other files
 var Client *mongo.Client
 
-func DBinstance() {
+func DBinstance(MongoDBURL string) {
 
-	MongoDBURL := os.Getenv("MONGODB_URL")
 	serverAPIOptions := options.ServerAPI(options.ServerAPIVersion1)
 	clientOptions := options.Client().ApplyURI(MongoDBURL).SetServerAPIOptions(serverAPIOptions)
 
