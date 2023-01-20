@@ -24,7 +24,8 @@ var router *gin.Engine
 var user1Token string
 var chatId string
 var user2Id string
-var messageId string
+var messageIdDelete string
+var messageIdEdit string
 
 func TestMain(m *testing.M) {
 	router = gin.Default()
@@ -83,9 +84,8 @@ func setupPhase() int {
 	user2Id = resUser2["_id"]
 
 	// initiate chat
-	data := fmt.Sprintf(`{"userToBeAdded":"%s"}`, user2Id)
-	fmt.Println("Str inp initiate chat", data)
-	input3 := []byte(data)
+	data1 := fmt.Sprintf(`{"userToBeAdded":"%s"}`, user2Id)
+	input3 := []byte(data1)
 	req3, _ := http.NewRequest("POST", "/api/chat/", bytes.NewBuffer(input3))
 	req3.Header.Set("Authorization", "Bearer "+user1Token)
 
@@ -99,7 +99,7 @@ func setupPhase() int {
 	_ = json.NewDecoder(response3.Body).Decode(&resChat)
 	chatId, _ = resChat["_id"].(string)
 
-	// send a message
+	// send a message for TestDeleteUserMessage
 	data2 := fmt.Sprintf(`{"chatId":"%s", "content":"How are you bro"}`, chatId)
 	input4 := []byte(data2)
 	req4, _ := http.NewRequest("POST", "/api/message/", bytes.NewBuffer(input4))
@@ -112,10 +112,28 @@ func setupPhase() int {
 		return response4.Code
 	}
 
-	var resMessage map[string]interface{}
-	_ = json.NewDecoder(response4.Body).Decode(&resMessage)
+	var resMessageDelete map[string]interface{}
+	_ = json.NewDecoder(response4.Body).Decode(&resMessageDelete)
 
-	messageId = resMessage["_id"].(string)
+	messageIdDelete = resMessageDelete["_id"].(string)
+
+	// send a message for TestEditUserMessage
+	data3 := fmt.Sprintf(`{"chatId":"%s", "content":"Message to be edited"}`, chatId)
+	input5 := []byte(data3)
+	req5, _ := http.NewRequest("POST", "/api/message/", bytes.NewBuffer(input5))
+	req5.Header.Set("Authorization", "Bearer "+user1Token)
+
+	response5 := httptest.NewRecorder()
+	router.ServeHTTP(response5, req5)
+
+	if response5.Code != 200 {
+		return response5.Code
+	}
+
+	var resMessageEdit map[string]interface{}
+	_ = json.NewDecoder(response5.Body).Decode(&resMessageEdit)
+
+	messageIdEdit = resMessageEdit["_id"].(string)
 	return 0
 }
 

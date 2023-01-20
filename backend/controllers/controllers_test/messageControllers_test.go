@@ -91,10 +91,53 @@ func TestSendMessage(t *testing.T) {
 	})
 }
 
+func TestGetMessage(t *testing.T) {
+	t.Run("returns user messages", func(t *testing.T) {
+		request, _ := http.NewRequest("GET", "/api/message/"+chatId, nil)
+		request.Header.Set("Authorization", "Bearer "+user1Token)
+
+		response := httptest.NewRecorder()
+		router.ServeHTTP(response, request)
+
+		assert.Equal(t, http.StatusOK, response.Code)
+
+		var result []map[string]interface{}
+		_ = json.NewDecoder(response.Body).Decode(&result)
+
+		if len(result) < 1 {
+			t.Errorf("Unexpected result: got %v, want %v", len(result), "atleast 1 message document")
+		}
+	})
+}
+
+func TestEditUserMessage(t *testing.T) {
+
+	t.Run("returns edited message", func(t *testing.T) {
+		data := fmt.Sprintf(`{"content":"Message edited", "messageId":"%s"}`, messageIdEdit)
+		input := []byte(data)
+		request, _ := http.NewRequest("PUT", "/api/message/", bytes.NewBuffer(input))
+		request.Header.Set("Authorization", "Bearer "+user1Token)
+
+		response := httptest.NewRecorder()
+		router.ServeHTTP(response, request)
+
+		expectedContent := "Message edited"
+
+		var result map[string]interface{}
+		_ = json.NewDecoder(response.Body).Decode(&result)
+
+		assert.Equal(t, http.StatusOK, response.Code)
+
+		if result["content"] != expectedContent {
+			t.Errorf("Unexpected result: got %v, want %v", result["content"], expectedContent)
+		}
+	})
+}
+
 func TestDeleteUserMessage(t *testing.T) {
 
 	t.Run("returns status ok", func(t *testing.T) {
-		request, _ := http.NewRequest("DELETE", "/api/message/"+messageId, nil)
+		request, _ := http.NewRequest("DELETE", "/api/message/"+messageIdDelete, nil)
 		request.Header.Set("Authorization", "Bearer "+user1Token)
 
 		response := httptest.NewRecorder()
