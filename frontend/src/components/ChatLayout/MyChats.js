@@ -11,7 +11,7 @@ const MyChats = ({ fetchAgain }) => {
 
   const fetchChats = async() => {
     try {
-      const { data } = await axios.get(`/api/chat/${user._id}`, 
+      const { data } = await axios.get(`/api/chat/`, 
         {
           headers: {
             "Content-Type": "application/json",

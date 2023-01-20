@@ -168,12 +168,12 @@ func AddOChatUser() gin.HandlerFunc {
 
 func GetUserChats() gin.HandlerFunc {
 	return func(c *gin.Context) {
-		id := c.Param("userId")
-
-		userId, err := primitive.ObjectIDFromHex(id)
-		if err != nil {
-			c.JSON(http.StatusInternalServerError, gin.H{"error": "Error while converting hex to objId"})
+		id, exists := c.Get("_id")
+		if !exists {
+			log.Panic("User details not available")
 		}
+		userId := id.(primitive.ObjectID)
+
 		// get chat collection
 		chatCollection := database.OpenCollection(database.Client, "chat")
 
