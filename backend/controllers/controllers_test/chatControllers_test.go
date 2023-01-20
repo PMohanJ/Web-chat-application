@@ -65,3 +65,31 @@ func TestDeleteUserConversation(t *testing.T) {
 		assert.Equal(t, http.StatusOK, response.Code)
 	})
 }
+
+func TestCreateGroupChat(t *testing.T) {
+	t.Run("returns status ok for create group", func(t *testing.T) {
+		data := fmt.Sprintf(`{"groupName":"Temporary testing group", "users":["%s"]}`, user2Id)
+		input := []byte(data)
+		request, _ := http.NewRequest("POST", "/api/chat/group", bytes.NewBuffer(input))
+		request.Header.Set("Authorization", "Bearer "+user1Token)
+
+		response := httptest.NewRecorder()
+		router.ServeHTTP(response, request)
+
+		expectedChatName := "Temporary testing group"
+		expectedChatLabel := true
+
+		var result map[string]interface{}
+		_ = json.NewDecoder(response.Body).Decode(&result)
+
+		assert.Equal(t, http.StatusOK, response.Code)
+
+		if result["chatName"] != expectedChatName {
+			t.Errorf("Unexpected result: got %v, want %v", result["chatName"], expectedChatName)
+		}
+
+		if result["isGroupChat"] != expectedChatLabel {
+			t.Errorf("Unexpected result: got %v, want %v", result["isGroupChat"], expectedChatLabel)
+		}
+	})
+}
