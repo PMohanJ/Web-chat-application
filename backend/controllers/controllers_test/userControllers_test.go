@@ -23,6 +23,8 @@ import (
 var router *gin.Engine
 var user1Token string
 var chatId string
+var chatIdDelete string
+var user0Id string
 var user2Id string
 var messageIdDelete string
 var messageIdEdit string
@@ -54,9 +56,40 @@ func TestMain(m *testing.M) {
 	os.Exit(code)
 }
 
-// setupInitialPhase creates a user to for req resources needed to make
-// subsequent operations like creating chat, send message, etc.
+// setupInitialPhase generates data to perform test operations
 func setupPhase() int {
+	statusCreateUsers := createUsers()
+	if statusCreateUsers != 0 {
+		return statusCreateUsers
+	}
+
+	statusInitiateChats := initiateChats()
+	if statusInitiateChats != 0 {
+		return statusInitiateChats
+	}
+
+	statusCreateMessages := createMessages()
+	if statusCreateMessages != 0 {
+		return statusCreateMessages
+	}
+
+	return 0
+}
+
+func createUsers() int {
+	input0 := []byte(`{"name":"User0", "email":"user0@gmail.com", "password":"haha123"}`)
+	req0, _ := http.NewRequest("POST", "/api/user/", bytes.NewBuffer(input0))
+
+	response0 := httptest.NewRecorder()
+	router.ServeHTTP(response0, req0)
+	if response0.Code != 200 {
+		return response0.Code
+	}
+
+	var resUser0 map[string]string
+	_ = json.NewDecoder(response0.Body).Decode(&resUser0)
+	user0Id = resUser0["_id"]
+
 	input1 := []byte(`{"name":"User1", "email":"user1@gmail.com", "password":"haha123"}`)
 	req1, _ := http.NewRequest("POST", "/api/user/", bytes.NewBuffer(input1))
 
@@ -83,57 +116,83 @@ func setupPhase() int {
 	_ = json.NewDecoder(response2.Body).Decode(&resUser2)
 	user2Id = resUser2["_id"]
 
+	return 0
+}
+
+func initiateChats() int {
+
 	// initiate chat
 	data1 := fmt.Sprintf(`{"userToBeAdded":"%s"}`, user2Id)
-	input3 := []byte(data1)
-	req3, _ := http.NewRequest("POST", "/api/chat/", bytes.NewBuffer(input3))
-	req3.Header.Set("Authorization", "Bearer "+user1Token)
+	input1 := []byte(data1)
+	req1, _ := http.NewRequest("POST", "/api/chat/", bytes.NewBuffer(input1))
+	req1.Header.Set("Authorization", "Bearer "+user1Token)
 
-	response3 := httptest.NewRecorder()
-	router.ServeHTTP(response3, req3)
-	if response3.Code != 200 {
-		return response3.Code
+	response1 := httptest.NewRecorder()
+	router.ServeHTTP(response1, req1)
+	if response1.Code != 200 {
+		return response1.Code
 	}
 
 	var resChat map[string]interface{}
-	_ = json.NewDecoder(response3.Body).Decode(&resChat)
+	_ = json.NewDecoder(response1.Body).Decode(&resChat)
 	chatId, _ = resChat["_id"].(string)
 
-	// send a message for TestDeleteUserMessage
-	data2 := fmt.Sprintf(`{"chatId":"%s", "content":"How are you bro"}`, chatId)
-	input4 := []byte(data2)
-	req4, _ := http.NewRequest("POST", "/api/message/", bytes.NewBuffer(input4))
-	req4.Header.Set("Authorization", "Bearer "+user1Token)
+	// initiate chat for TestDeleteUserConversation
+	data2 := fmt.Sprintf(`{"userToBeAdded":"%s"}`, user0Id)
+	input2 := []byte(data2)
+	req2, _ := http.NewRequest("POST", "/api/chat/", bytes.NewBuffer(input2))
+	req2.Header.Set("Authorization", "Bearer "+user1Token)
 
-	response4 := httptest.NewRecorder()
-	router.ServeHTTP(response4, req4)
+	response2 := httptest.NewRecorder()
+	router.ServeHTTP(response2, req2)
+	if response2.Code != 200 {
+		return response2.Code
+	}
 
-	if response4.Code != 200 {
-		return response4.Code
+	var resChatDelete map[string]interface{}
+	_ = json.NewDecoder(response2.Body).Decode(&resChatDelete)
+	chatIdDelete, _ = resChatDelete["_id"].(string)
+
+	return 0
+}
+
+func createMessages() int {
+	// message for TestDeleteUserMessage
+	data1 := fmt.Sprintf(`{"chatId":"%s", "content":"How are you bro"}`, chatId)
+	input1 := []byte(data1)
+	req1, _ := http.NewRequest("POST", "/api/message/", bytes.NewBuffer(input1))
+	req1.Header.Set("Authorization", "Bearer "+user1Token)
+
+	response1 := httptest.NewRecorder()
+	router.ServeHTTP(response1, req1)
+
+	if response1.Code != 200 {
+		return response1.Code
 	}
 
 	var resMessageDelete map[string]interface{}
-	_ = json.NewDecoder(response4.Body).Decode(&resMessageDelete)
+	_ = json.NewDecoder(response1.Body).Decode(&resMessageDelete)
 
 	messageIdDelete = resMessageDelete["_id"].(string)
 
-	// send a message for TestEditUserMessage
-	data3 := fmt.Sprintf(`{"chatId":"%s", "content":"Message to be edited"}`, chatId)
-	input5 := []byte(data3)
-	req5, _ := http.NewRequest("POST", "/api/message/", bytes.NewBuffer(input5))
-	req5.Header.Set("Authorization", "Bearer "+user1Token)
+	// message for TestEditUserMessage
+	data2 := fmt.Sprintf(`{"chatId":"%s", "content":"Message to be edited"}`, chatId)
+	input2 := []byte(data2)
+	req2, _ := http.NewRequest("POST", "/api/message/", bytes.NewBuffer(input2))
+	req2.Header.Set("Authorization", "Bearer "+user1Token)
 
-	response5 := httptest.NewRecorder()
-	router.ServeHTTP(response5, req5)
+	response2 := httptest.NewRecorder()
+	router.ServeHTTP(response2, req2)
 
-	if response5.Code != 200 {
-		return response5.Code
+	if response2.Code != 200 {
+		return response2.Code
 	}
 
 	var resMessageEdit map[string]interface{}
-	_ = json.NewDecoder(response5.Body).Decode(&resMessageEdit)
+	_ = json.NewDecoder(response2.Body).Decode(&resMessageEdit)
 
 	messageIdEdit = resMessageEdit["_id"].(string)
+
 	return 0
 }
 
