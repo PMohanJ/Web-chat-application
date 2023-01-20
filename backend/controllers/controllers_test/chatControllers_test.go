@@ -53,3 +53,15 @@ func TestGetUserChats(t *testing.T) {
 		}
 	})
 }
+
+func TestDeleteUserConversation(t *testing.T) {
+	t.Run("returns status ok for delete conversation", func(t *testing.T) {
+		request, _ := http.NewRequest("DELETE", "/api/chat/"+chatIdDelete, nil)
+		request.Header.Set("Authorization", "Bearer "+user1Token)
+
+		response := httptest.NewRecorder()
+		router.ServeHTTP(response, request)
+
+		assert.Equal(t, http.StatusOK, response.Code)
+	})
+}
