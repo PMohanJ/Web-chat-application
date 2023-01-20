@@ -284,16 +284,37 @@ func TestSearchUsers(t *testing.T) {
 
 	t.Run("returns no users found", func(t *testing.T) {
 		url := "/api/user/search?search=" + "uoaomaxoasvfa*#20"
-		log.Println(url)
 		request, _ := http.NewRequest("GET", url, nil)
 		request.Header.Set("Authorization", "Bearer "+user1Token)
 
 		response := httptest.NewRecorder()
 		router.ServeHTTP(response, request)
 
-		var res map[string]string
-		_ = json.NewDecoder(response.Body).Decode(&res)
+		var result []map[string]string
+		_ = json.NewDecoder(response.Body).Decode(&result)
 
 		assert.Equal(t, http.StatusOK, response.Code)
+
+		if len(result) > 0 {
+			t.Errorf("Unexpected result: got %v, want %v", len(result), "0 documents to be returned")
+		}
+	})
+
+	t.Run("returns user found", func(t *testing.T) {
+		url := "/api/user/search?search=" + "user2"
+		request, _ := http.NewRequest("GET", url, nil)
+		request.Header.Set("Authorization", "Bearer "+user1Token)
+
+		response := httptest.NewRecorder()
+		router.ServeHTTP(response, request)
+
+		var result []map[string]string
+		_ = json.NewDecoder(response.Body).Decode(&result)
+
+		assert.Equal(t, http.StatusOK, response.Code)
+
+		if len(result) < 1 {
+			t.Errorf("Unexpected result: got %v, want %v", len(result), "at least 1 document")
+		}
 	})
 }
