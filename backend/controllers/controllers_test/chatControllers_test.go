@@ -33,3 +33,23 @@ func TestAddChatUser(t *testing.T) {
 		}
 	})
 }
+
+func TestGetUserChats(t *testing.T) {
+	t.Run("returns user chats", func(t *testing.T) {
+		request, _ := http.NewRequest("GET", "/api/chat/", nil)
+		request.Header.Set("Authorization", "Bearer "+user1Token)
+
+		response := httptest.NewRecorder()
+		router.ServeHTTP(response, request)
+
+		var result []map[string]interface{}
+		_ = json.NewDecoder(response.Body).Decode(&result)
+
+		assert.Equal(t, http.StatusOK, response.Code)
+
+		// wait 'ill change the actual handler so that I don't need to send id explicitly
+		if len(result) < 1 {
+			t.Errorf("Unexpected result: got %v, want %v", len(result), "at least 1 chat document")
+		}
+	})
+}
