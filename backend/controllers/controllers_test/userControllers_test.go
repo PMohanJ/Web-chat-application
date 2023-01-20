@@ -23,6 +23,7 @@ import (
 var router *gin.Engine
 var user1Token string
 var chatId string
+var chatIdGroup string
 var chatIdDelete string
 var user0Id string
 var user2Id string
@@ -73,6 +74,10 @@ func setupPhase() int {
 		return statusCreateMessages
 	}
 
+	statusCreateGroupChat := createGroupChat()
+	if statusCreateGroupChat != 0 {
+		return statusCreateGroupChat
+	}
 	return 0
 }
 
@@ -193,6 +198,26 @@ func createMessages() int {
 
 	messageIdEdit = resMessageEdit["_id"].(string)
 
+	return 0
+}
+
+func createGroupChat() int {
+	// create a group chat for user1 and user2
+	data := fmt.Sprintf(`{"groupName":"group for testing", "users":["%s"]}`, user2Id)
+	input := []byte(data)
+	request, _ := http.NewRequest("POST", "/api/chat/group", bytes.NewBuffer(input))
+	request.Header.Set("Authorization", "Bearer "+user1Token)
+
+	response := httptest.NewRecorder()
+	router.ServeHTTP(response, request)
+
+	if response.Code != 200 {
+		return response.Code
+	}
+
+	var result map[string]interface{}
+	_ = json.NewDecoder(request.Body).Decode(&result)
+	chatIdGroup, _ = result["_id"].(string)
 	return 0
 }
 
