@@ -91,10 +91,10 @@ func TestSendMessage(t *testing.T) {
 	})
 }
 
-func TestDeleteUserConversation(t *testing.T) {
+func TestDeleteUserMessage(t *testing.T) {
 
 	t.Run("returns status ok", func(t *testing.T) {
-		request, _ := http.NewRequest("DELETE", "/api/message/"+chatId, nil)
+		request, _ := http.NewRequest("DELETE", "/api/message/"+messageId, nil)
 		request.Header.Set("Authorization", "Bearer "+user1Token)
 
 		response := httptest.NewRecorder()

@@ -24,6 +24,7 @@ var router *gin.Engine
 var user1Token string
 var chatId string
 var user2Id string
+var messageId string
 
 func TestMain(m *testing.M) {
 	router = gin.Default()
@@ -67,7 +68,6 @@ func setupPhase() int {
 	var resUser1 map[string]string
 	_ = json.NewDecoder(response1.Body).Decode(&resUser1)
 	user1Token = resUser1["token"]
-	fmt.Println(user1Token)
 
 	input2 := []byte(`{"name":"User2", "email":"user2@gmail.com", "password":"haha123"}`)
 	req2, _ := http.NewRequest("POST", "/api/user/", bytes.NewBuffer(input2))
@@ -81,7 +81,6 @@ func setupPhase() int {
 	var resUser2 map[string]string
 	_ = json.NewDecoder(response2.Body).Decode(&resUser2)
 	user2Id = resUser2["_id"]
-	fmt.Println("UserID 2 ", user2Id)
 
 	// initiate chat
 	data := fmt.Sprintf(`{"userToBeAdded":"%s"}`, user2Id)
@@ -89,7 +88,7 @@ func setupPhase() int {
 	input3 := []byte(data)
 	req3, _ := http.NewRequest("POST", "/api/chat/", bytes.NewBuffer(input3))
 	req3.Header.Set("Authorization", "Bearer "+user1Token)
-	//req3.Header.Set("Content-Type", "application/json")
+
 	response3 := httptest.NewRecorder()
 	router.ServeHTTP(response3, req3)
 	if response3.Code != 200 {
@@ -99,7 +98,24 @@ func setupPhase() int {
 	var resChat map[string]interface{}
 	_ = json.NewDecoder(response3.Body).Decode(&resChat)
 	chatId, _ = resChat["_id"].(string)
-	fmt.Println("Chat id ", chatId)
+
+	// send a message
+	data2 := fmt.Sprintf(`{"chatId":"%s", "content":"How are you bro"}`, chatId)
+	input4 := []byte(data2)
+	req4, _ := http.NewRequest("POST", "/api/message/", bytes.NewBuffer(input4))
+	req4.Header.Set("Authorization", "Bearer "+user1Token)
+
+	response4 := httptest.NewRecorder()
+	router.ServeHTTP(response4, req4)
+
+	if response4.Code != 200 {
+		return response4.Code
+	}
+
+	var resMessage map[string]interface{}
+	_ = json.NewDecoder(response4.Body).Decode(&resMessage)
+
+	messageId = resMessage["_id"].(string)
 	return 0
 }
 
