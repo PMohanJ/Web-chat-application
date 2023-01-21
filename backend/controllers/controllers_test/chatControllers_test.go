@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
+	"log"
 	"net/http"
 	"net/http/httptest"
 	"testing"
@@ -113,6 +114,56 @@ func TestRenameGroupChatName(t *testing.T) {
 
 		if result["updatedGroupName"] != expectedChatName {
 			t.Errorf("Unexpected result: got %v, want %v", result["chatName"], expectedChatName)
+		}
+	})
+}
+
+func TestAddUserToGroupChat(t *testing.T) {
+	t.Run("returns status ok for add user to chat", func(t *testing.T) {
+		// adding another user, user0Id to the group
+		data := fmt.Sprintf(`{"userId":"%s", "chatId":"%s"}`, user0Id, chatIdGroup)
+		input := []byte(data)
+		request, _ := http.NewRequest("PUT", "/api/chat/groupadd", bytes.NewBuffer(input))
+		request.Header.Set("Authorization", "Bearer "+user1Token)
+
+		response := httptest.NewRecorder()
+		router.ServeHTTP(response, request)
+
+		expectedGroupUsersLength := 3
+		var expectedAddedUserId string
+
+		var result map[string]interface{}
+		_ = json.NewDecoder(response.Body).Decode(&result)
+
+		resultUsers, ok := result["users"].([]interface{})
+		if !ok {
+			log.Panic("Type assertion failed")
+		}
+
+		assert.Equal(t, http.StatusOK, response.Code)
+
+		if len(resultUsers) < 3 {
+			t.Errorf("Unexpected result: got %v, want %v", len(resultUsers), expectedGroupUsersLength)
+		}
+
+		// iterate over user objects to get the user id that just got added
+		for i := range resultUsers {
+			resultUserObject, ok := resultUsers[i].(map[string]interface{})
+			if !ok {
+				log.Panic("Type assertion failed")
+			}
+			resultUserId, ok := resultUserObject["_id"].(string)
+			if !ok {
+				log.Panic("Type assertion failed")
+			}
+
+			if resultUserId == user0Id {
+				expectedAddedUserId = user0Id
+			}
+		}
+
+		if expectedAddedUserId == "" {
+			t.Errorf("Unexpected result: got %v, want %v", nil, user0Id)
 		}
 	})
 }
