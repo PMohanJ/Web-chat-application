@@ -27,11 +27,11 @@ persistent as we're using mongodb atlas database service to store user login inf
 
 ## Screenshots
 
-|                                              |                                        |
-| -------------------------------------------- | -------------------------------------- |
+|                                                                                                     |                                                                                               |
+| --------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------- |
 | ![login](https://res.cloudinary.com/dkqc4za4f/image/upload/v1670583518/login_o9r9bz.png)            | ![signup](https://res.cloudinary.com/dkqc4za4f/image/upload/v1670583574/signup_xdkxh3.png)    |
 | ![chat](https://res.cloudinary.com/dkqc4za4f/image/upload/v1670583610/chat_page_tbo2vn.png)         | ![p2pchat](https://res.cloudinary.com/dkqc4za4f/image/upload/v1670583628/p2p_chat_jzwlyq.png) |
-| ![usersearch](https://res.cloudinary.com/dkqc4za4f/image/upload/v1670583648/user_search_kezpv3.png) |                                        |
+| ![usersearch](https://res.cloudinary.com/dkqc4za4f/image/upload/v1670583648/user_search_kezpv3.png) |                                                                                               |
 
 ### Prerequisites
 
@@ -115,7 +115,7 @@ go run main.go
 ## Todo
 
 - [x] Provide an option to remove an user from his/her chats
-- [ ] Provide an option to delete and edit a message
+- [x] Provide an option to delete and edit a message
 
 ## Further Development
 
