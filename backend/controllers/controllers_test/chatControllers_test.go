@@ -96,7 +96,7 @@ func TestCreateGroupChat(t *testing.T) {
 }
 
 func TestRenameGroupChatName(t *testing.T) {
-	t.Run("returns status ok for rename group", func(t *testing.T) {
+	t.Run("returns updated group chat name", func(t *testing.T) {
 		data := fmt.Sprintf(`{"groupName":"Group for testing renamed", "chatId":"%s"}`, chatIdGroup)
 		input := []byte(data)
 		request, _ := http.NewRequest("PUT", "/api/chat/grouprename", bytes.NewBuffer(input))
@@ -169,7 +169,7 @@ func TestAddUserToGroupChat(t *testing.T) {
 }
 
 func TestDeleteUserFromGroupChat(t *testing.T) {
-	t.Run("returns status of for delete user from group", func(t *testing.T) {
+	t.Run("returns status ok for delete user from group", func(t *testing.T) {
 		// remove a user, user2Id from the group
 		data := fmt.Sprintf(`{"userId":"%s", "chatId":"%s"}`, user2Id, chatIdGroup)
 		input := []byte(data)
@@ -214,6 +214,29 @@ func TestDeleteUserFromGroupChat(t *testing.T) {
 
 		if expectedRemovedUserId != "" {
 			t.Errorf("Unexpected result: got %v, want %v", expectedRemovedUserId, nil)
+		}
+	})
+}
+
+func TestUserExitGroup(t *testing.T) {
+	t.Run("returns exited from group", func(t *testing.T) {
+		data := fmt.Sprintf(`{"chatId":"%s"}`, chatId)
+		input := []byte(data)
+		request, _ := http.NewRequest("PUT", "/api/chat/groupexit", bytes.NewBuffer(input))
+		request.Header.Set("Authorization", "Bearer "+user1Token)
+
+		response := httptest.NewRecorder()
+		router.ServeHTTP(response, request)
+
+		expectedMessage := "Exited from group"
+
+		var result map[string]string
+		_ = json.NewDecoder(response.Body).Decode(&result)
+
+		assert.Equal(t, http.StatusOK, response.Code)
+
+		if result["message"] != expectedMessage {
+			t.Errorf("Unexpected result: got %v, want %v", result["message"], expectedMessage)
 		}
 	})
 }
