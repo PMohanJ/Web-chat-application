@@ -167,3 +167,53 @@ func TestAddUserToGroupChat(t *testing.T) {
 		}
 	})
 }
+
+func TestDeleteUserFromGroupChat(t *testing.T) {
+	t.Run("returns status of for delete user from group", func(t *testing.T) {
+		// remove a user, user2Id from the group
+		data := fmt.Sprintf(`{"userId":"%s", "chatId":"%s"}`, user2Id, chatIdGroup)
+		input := []byte(data)
+		request, _ := http.NewRequest("PUT", "/api/chat/groupremove", bytes.NewBuffer(input))
+		request.Header.Set("Authorization", "Bearer "+user1Token)
+
+		response := httptest.NewRecorder()
+		router.ServeHTTP(response, request)
+
+		expectedGroupUsersLength := 1
+		expectedRemovedUserId := ""
+
+		var result map[string]interface{}
+		_ = json.NewDecoder(response.Body).Decode(&result)
+
+		resultUsers, ok := result["users"].([]interface{})
+		if !ok {
+			log.Panic("Type assertion failed")
+		}
+
+		assert.Equal(t, http.StatusOK, response.Code)
+
+		if len(resultUsers) > 1 {
+			t.Errorf("Unexpected result: got %v, want %v", len(resultUsers), expectedGroupUsersLength)
+		}
+
+		// iterate over user objects to check wheather user2Id exist
+		for i := range resultUsers {
+			resultUserObject, ok := resultUsers[i].(map[string]interface{})
+			if !ok {
+				log.Panic("Type assertion failed")
+			}
+			resultUserId, ok := resultUserObject["_id"].(string)
+			if !ok {
+				log.Panic("Type assertion failed")
+			}
+
+			if resultUserId == user2Id {
+				expectedRemovedUserId = user2Id
+			}
+		}
+
+		if expectedRemovedUserId != "" {
+			t.Errorf("Unexpected result: got %v, want %v", expectedRemovedUserId, nil)
+		}
+	})
+}
