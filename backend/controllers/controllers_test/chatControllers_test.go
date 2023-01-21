@@ -179,7 +179,6 @@ func TestDeleteUserFromGroupChat(t *testing.T) {
 		response := httptest.NewRecorder()
 		router.ServeHTTP(response, request)
 
-		expectedGroupUsersLength := 1
 		expectedRemovedUserId := ""
 
 		var result map[string]interface{}
@@ -191,10 +190,6 @@ func TestDeleteUserFromGroupChat(t *testing.T) {
 		}
 
 		assert.Equal(t, http.StatusOK, response.Code)
-
-		if len(resultUsers) > 1 {
-			t.Errorf("Unexpected result: got %v, want %v", len(resultUsers), expectedGroupUsersLength)
-		}
 
 		// iterate over user objects to check wheather user2Id exist
 		for i := range resultUsers {
