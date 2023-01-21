@@ -216,7 +216,7 @@ func createGroupChat() int {
 	}
 
 	var result map[string]interface{}
-	_ = json.NewDecoder(request.Body).Decode(&result)
+	_ = json.NewDecoder(response.Body).Decode(&result)
 	chatIdGroup, _ = result["_id"].(string)
 	return 0
 }
