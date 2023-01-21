@@ -93,3 +93,26 @@ func TestCreateGroupChat(t *testing.T) {
 		}
 	})
 }
+
+func TestRenameGroupChatName(t *testing.T) {
+	t.Run("returns status ok for rename group", func(t *testing.T) {
+		data := fmt.Sprintf(`{"groupName":"Group for testing renamed", "chatId":"%s"}`, chatIdGroup)
+		input := []byte(data)
+		request, _ := http.NewRequest("PUT", "/api/chat/grouprename", bytes.NewBuffer(input))
+		request.Header.Set("Authorization", "Bearer "+user1Token)
+
+		response := httptest.NewRecorder()
+		router.ServeHTTP(response, request)
+
+		expectedChatName := "Group for testing renamed"
+
+		var result map[string]interface{}
+		_ = json.NewDecoder(response.Body).Decode(&result)
+
+		assert.Equal(t, http.StatusOK, response.Code)
+
+		if result["updatedGroupName"] != expectedChatName {
+			t.Errorf("Unexpected result: got %v, want %v", result["chatName"], expectedChatName)
+		}
+	})
+}
