@@ -8,7 +8,7 @@ import UpdateGroupChat from '../utils/UpdateGroupChat';
 import axios from 'axios'
 import MessagesComp from './MessagesComp';
 
-var socket = new WebSocket(`ws://${window.location.hostname}/api/ws`);
+var socket = new WebSocket(`ws://${process.env.WDS_SOCKET_HOST}:${process.env.WDS_SOCKET_PORT}${process.env.WDS_SOCKET_PATH}`);
 
 const Chat = ({fetchAgain, setFetchAgain}) => {
   const {selectedChat, setSelectedChat, user} = ChatState();
