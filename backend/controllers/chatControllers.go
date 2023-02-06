@@ -16,7 +16,7 @@ import (
 )
 
 // AddChatUser lets the user to add a user to chat with
-func AddOChatUser() gin.HandlerFunc {
+func AddChatUser() gin.HandlerFunc {
 	return func(c *gin.Context) {
 
 		var ids map[string]interface{}

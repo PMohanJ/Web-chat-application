@@ -8,7 +8,7 @@ import (
 
 func AddChatRoutes(r *gin.RouterGroup) {
 	chat := r.Group("/chat")
-	chat.POST("/", middleware.Authenticate(), controllers.AddOChatUser())
+	chat.POST("/", middleware.Authenticate(), controllers.AddChatUser())
 	chat.GET("/", middleware.Authenticate(), controllers.GetUserChats())
 	chat.DELETE("/:chatId", middleware.Authenticate(), controllers.DeleteUserConversation())
 	chat.POST("/group", middleware.Authenticate(), controllers.CreateGroupChat())
