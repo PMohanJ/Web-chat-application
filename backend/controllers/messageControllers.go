@@ -74,17 +74,8 @@ func SendMessage() gin.HandlerFunc {
 
 		lookupStage := LookUpStage("user", "sender", "_id", "sender")
 
-		projectStage := bson.D{
-			{
-				"$project", bson.D{
-					{"sender.password", 0},
-					{"created_at", 0},
-					{"updated_at", 0},
-					{"sender.created_at", 0},
-					{"sender.updated_at", 0},
-				},
-			},
-		}
+		projectStage := ProjectStage("sender.password", "created_at",
+			"updated_at", "sender.created_at", "sender.updated_at")
 
 		cursor, err := messageCollection.Aggregate(ctx, mongo.Pipeline{matchStage, lookupStage, projectStage})
 		if err != nil {
@@ -129,17 +120,8 @@ func GetMessages() gin.HandlerFunc {
 
 		lookupStage := LookUpStage("user", "sender", "_id", "sender")
 
-		projectStage := bson.D{
-			{
-				"$project", bson.D{
-					{"users.password", 0},
-					{"created_at", 0},
-					{"updated_at", 0},
-					{"users.created_at", 0},
-					{"users.updated_at", 0},
-				},
-			},
-		}
+		projectStage := ProjectStage("users.password", "created_at",
+			"updated_at", "users.created_at", "users.updated_at")
 
 		cursor, err := messageCollection.Aggregate(ctx, mongo.Pipeline{matchStage, lookupStage, projectStage})
 		if err != nil {
@@ -206,17 +188,8 @@ func EditUserMessage() gin.HandlerFunc {
 
 		lookupStage := LookUpStage("user", "sender", "_id", "sender")
 
-		projectStage := bson.D{
-			{
-				"$project", bson.D{
-					{"sender.password", 0},
-					{"created_at", 0},
-					{"updated_at", 0},
-					{"sender.created_at", 0},
-					{"sender.updated_at", 0},
-				},
-			},
-		}
+		projectStage := ProjectStage("sender.password", "created_at",
+			"updated_at", "sender.created_at", "sender.updated_at")
 
 		cursor, err := messageCollection.Aggregate(ctx, mongo.Pipeline{matchStage, lookupStage, projectStage})
 		if err != nil {

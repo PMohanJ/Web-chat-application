@@ -71,13 +71,9 @@ func AddChatUser() gin.HandlerFunc {
 			}
 			lookupStage := LookUpStage("user", "users", "_id", "users")
 
-			projectStage := bson.D{
-				{
-					"$project", bson.D{
-						{"users.password", 0}, {"created_at", 0}, {"updated_at", 0}, {"users.created_at", 0}, {"users.updated_at", 0},
-					},
-				},
-			}
+			projectStage := ProjectStage("users.password", "created_at",
+				"updated_at", "users.created_at", "users.updated_at")
+
 			var res []bson.M
 			cur, err := chatCollection.Aggregate(ctx, mongo.Pipeline{matchStage, lookupStage, projectStage})
 			if err != nil {
@@ -128,17 +124,8 @@ func AddChatUser() gin.HandlerFunc {
 
 		lookupStage := LookUpStage("user", "users", "_id", "users")
 
-		projectStage := bson.D{
-			{
-				"$project", bson.D{
-					{"users.created_at", 0},
-					{"users.updated_at", 0},
-					{"users.password", 0},
-					{"created_at", 0},
-					{"updated_at", 0},
-				},
-			},
-		}
+		projectStage := ProjectStage("users.password", "created_at",
+			"updated_at", "users.created_at", "users.updated_at")
 
 		cursor, err := chatCollection.Aggregate(ctx, mongo.Pipeline{matchStage, lookupStage, projectStage})
 		if err != nil {
@@ -186,17 +173,8 @@ func GetUserChats() gin.HandlerFunc {
 			},
 		}
 
-		projectStage := bson.D{
-			{
-				"$project", bson.D{
-					{"users.password", 0},
-					{"created_at", 0},
-					{"updated_at", 0},
-					{"users.created_at", 0},
-					{"users.updated_at", 0},
-				},
-			},
-		}
+		projectStage := ProjectStage("users.password", "created_at",
+			"updated_at", "users.created_at", "users.updated_at")
 
 		ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
 		defer cancel()
@@ -318,17 +296,8 @@ func CreateGroupChat() gin.HandlerFunc {
 
 		lookupStage := LookUpStage("user", "users", "_id", "users")
 
-		projectStage := bson.D{
-			{
-				"$project", bson.D{
-					{"users.password", 0},
-					{"created_at", 0},
-					{"updated_at", 0},
-					{"users.created_at", 0},
-					{"users.updated_at", 0},
-				},
-			},
-		}
+		projectStage := ProjectStage("users.password", "created_at",
+			"updated_at", "users.created_at", "users.updated_at")
 
 		cursor, err := chatCollection.Aggregate(ctx, mongo.Pipeline{matchStage, lookupStage, projectStage})
 		if err != nil {
@@ -432,17 +401,8 @@ func AddUserToGroupChat() gin.HandlerFunc {
 
 		lookupStage := LookUpStage("user", "users", "_id", "users")
 
-		projectStage := bson.D{
-			{
-				"$project", bson.D{
-					{"users.password", 0},
-					{"created_at", 0},
-					{"updated_at", 0},
-					{"users.created_at", 0},
-					{"users.updated_at", 0},
-				},
-			},
-		}
+		projectStage := ProjectStage("users.password", "created_at",
+			"updated_at", "users.created_at", "users.updated_at")
 
 		cursor, err := chatCollection.Aggregate(ctx, mongo.Pipeline{matchStage, lookupStage, projectStage})
 		if err != nil {
@@ -515,17 +475,8 @@ func DeleteUserFromGroupChat() gin.HandlerFunc {
 
 		lookupStage := LookUpStage("user", "users", "_id", "users")
 
-		projectStage := bson.D{
-			{
-				"$project", bson.D{
-					{"users.password", 0},
-					{"created_at", 0},
-					{"updated_at", 0},
-					{"users.created_at", 0},
-					{"users.updated_at", 0},
-				},
-			},
-		}
+		projectStage := ProjectStage("users.password", "created_at",
+			"updated_at", "users.created_at", "users.updated_at")
 
 		cursor, err := chatCollection.Aggregate(ctx, mongo.Pipeline{matchStage, lookupStage, projectStage})
 		if err != nil {

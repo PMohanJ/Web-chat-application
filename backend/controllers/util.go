@@ -16,3 +16,17 @@ func LookUpStage(from, localField, foreignField, as string) bson.D {
 		},
 	}
 }
+
+func ProjectStage(field1, field2, field3, field4, field5 string) bson.D {
+	return bson.D{
+		{
+			"$project", bson.D{
+				{field1, 0},
+				{field2, 0},
+				{field3, 0},
+				{field4, 0},
+				{field5, 0},
+			},
+		},
+	}
+}
