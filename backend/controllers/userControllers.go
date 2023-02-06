@@ -88,9 +88,9 @@ func AuthUser() gin.HandlerFunc {
 		ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
 		defer cancel()
 
-		// get the collection to perform querying
 		userCollection := database.OpenCollection(database.Client, "user")
-		var registeredUser models.UserResponse
+
+		var registeredUser bson.M
 
 		// check if user is a registered user
 		err := userCollection.FindOne(ctx, bson.M{"email": user.Email}).Decode(&registeredUser)
@@ -102,20 +102,26 @@ func AuthUser() gin.HandlerFunc {
 			log.Panic(err)
 		}
 
-		log.Printf("user data from database %+v", registeredUser)
 		// user exist, check for password validation
-		errMsg, valid := helpers.VerifyPassword(registeredUser.Password, user.Password)
+		resgisteredPassword := registeredUser["password"].(string)
+		errMsg, valid := helpers.VerifyPassword(resgisteredPassword, user.Password)
 		if !valid {
 			c.JSON(http.StatusUnauthorized, gin.H{"error": errMsg})
 			return
 		}
 
+		id, ok := registeredUser["_id"].(primitive.ObjectID)
+		if !ok {
+			log.Panic("Type assertion failed")
+		}
+
 		// generate token for the user
-		if registeredUser.Token, err = helpers.GenerateToken(registeredUser.Id.Hex(), user.Name, user.Email); err != nil {
+		if registeredUser["token"], err = helpers.GenerateToken(id.Hex(), user.Name, user.Email); err != nil {
 			c.JSON(http.StatusInternalServerError, gin.H{"error": "Unable to generate token"})
 			log.Panic(err)
 		}
 
+		delete(registeredUser, "password")
 		c.JSON(http.StatusOK, registeredUser)
 	}
 }
@@ -130,32 +136,38 @@ func SearchUsers() gin.HandlerFunc {
 
 		// get the user collection
 		userCollection := database.OpenCollection(database.Client, "user")
-		filter := bson.D{
-			{"$or",
-				bson.A{
-					bson.D{{"name", bson.D{{"$regex", query}}}},
-					bson.D{{"email", bson.D{{"$regex", query}}}},
+
+		matchStage := bson.D{
+			{"$match", bson.D{
+				{"$or",
+					bson.A{
+						bson.D{{"name", bson.D{{"$regex", query}}}},
+						bson.D{{"email", bson.D{{"$regex", query}}}},
+					},
+				},
+			}},
+		}
+		projectStage := bson.D{
+			{
+				"$project", bson.D{
+					{"password", 0},
+					{"created_at", 0},
+					{"updated_at", 0},
 				},
 			},
 		}
-
-		cursor, err := userCollection.Find(ctx, filter)
+		cursor, err := userCollection.Aggregate(ctx, mongo.Pipeline{matchStage, projectStage})
 		if err != nil && errors.Is(err, mongo.ErrNoDocuments) {
 			c.Status(http.StatusOK)
 			return
 		}
 
-		var results []models.UserResponse
-		for cursor.Next(ctx) {
-			var temp models.UserResponse
-			if err := cursor.Decode(&temp); err != nil {
-				c.JSON(http.StatusInternalServerError, gin.H{"error": "error in the server"})
-				log.Panic(err)
-			}
-			results = append(results, temp)
+		var results []bson.M
+		if err := cursor.All(ctx, &results); err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{"error": "error in the server"})
+			log.Panic(err)
 		}
-
+		log.Println(results)
 		c.JSON(http.StatusOK, results)
-
 	}
 }
