@@ -72,16 +72,7 @@ func SendMessage() gin.HandlerFunc {
 			},
 		}
 
-		lookupStage := bson.D{
-			{
-				"$lookup", bson.D{
-					{"from", "user"},
-					{"localField", "sender"},
-					{"foreignField", "_id"},
-					{"as", "sender"},
-				},
-			},
-		}
+		lookupStage := LookUpStage("user", "sender", "_id", "sender")
 
 		projectStage := bson.D{
 			{
@@ -136,16 +127,7 @@ func GetMessages() gin.HandlerFunc {
 			},
 		}
 
-		lookupStage := bson.D{
-			{
-				"$lookup", bson.D{
-					{"from", "user"},
-					{"localField", "sender"},
-					{"foreignField", "_id"},
-					{"as", "sender"},
-				},
-			},
-		}
+		lookupStage := LookUpStage("user", "sender", "_id", "sender")
 
 		projectStage := bson.D{
 			{
@@ -216,38 +198,27 @@ func EditUserMessage() gin.HandlerFunc {
 			log.Panic(err)
 		}
 
-		pipeline := mongo.Pipeline{
-			bson.D{
-				{
-					"$match", updatedDoc,
-				},
+		matchStage := bson.D{
+			{
+				"$match", updatedDoc,
 			},
+		}
 
-			bson.D{
-				{
-					"$lookup", bson.D{
-						{"from", "user"},
-						{"localField", "sender"},
-						{"foreignField", "_id"},
-						{"as", "sender"},
-					},
-				},
-			},
+		lookupStage := LookUpStage("user", "sender", "_id", "sender")
 
-			bson.D{
-				{
-					"$project", bson.D{
-						{"sender.password", 0},
-						{"created_at", 0},
-						{"updated_at", 0},
-						{"sender.created_at", 0},
-						{"sender.updated_at", 0},
-					},
+		projectStage := bson.D{
+			{
+				"$project", bson.D{
+					{"sender.password", 0},
+					{"created_at", 0},
+					{"updated_at", 0},
+					{"sender.created_at", 0},
+					{"sender.updated_at", 0},
 				},
 			},
 		}
 
-		cursor, err := messageCollection.Aggregate(ctx, pipeline)
+		cursor, err := messageCollection.Aggregate(ctx, mongo.Pipeline{matchStage, lookupStage, projectStage})
 		if err != nil {
 			c.JSON(http.StatusInternalServerError, gin.H{"error": "Error while retrieving data"})
 			log.Panic(err)

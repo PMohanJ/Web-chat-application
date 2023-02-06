@@ -58,7 +58,7 @@ func AddChatUser() gin.HandlerFunc {
 		var existedChat models.Chat
 		err = chatCollection.FindOne(ctx, filter).Decode(&existedChat)
 		if err == nil {
-			// chat exist, perform aggragrate operations to join document of Chat with respectice chat Users profile
+			// chat exist, perform aggragrate operations to join document of Chat with respective chat Users profile
 			matchStage := bson.D{
 				{
 					"$match", bson.D{{"isGroupChat", false},
@@ -69,11 +69,7 @@ func AddChatUser() gin.HandlerFunc {
 							}}},
 				},
 			}
-			lookupStage := bson.D{
-				{
-					"$lookup", bson.D{{"from", "user"}, {"localField", "users"}, {"foreignField", "_id"}, {"as", "users"}},
-				},
-			}
+			lookupStage := LookUpStage("user", "users", "_id", "users")
 
 			projectStage := bson.D{
 				{
@@ -130,16 +126,7 @@ func AddChatUser() gin.HandlerFunc {
 			},
 		}
 
-		lookupStage := bson.D{
-			{
-				"$lookup", bson.D{
-					{"from", "user"},
-					{"localField", "users"},
-					{"foreignField", "_id"},
-					{"as", "users"},
-				},
-			},
-		}
+		lookupStage := LookUpStage("user", "users", "_id", "users")
 
 		projectStage := bson.D{
 			{
@@ -174,7 +161,6 @@ func GetUserChats() gin.HandlerFunc {
 		}
 		userId := id.(primitive.ObjectID)
 
-		// get chat collection
 		chatCollection := database.OpenCollection(database.Client, "chat")
 
 		matchStage := bson.D{
@@ -187,16 +173,7 @@ func GetUserChats() gin.HandlerFunc {
 			},
 		}
 
-		lookupStage := bson.D{
-			{
-				"$lookup", bson.D{
-					{"from", "user"},
-					{"localField", "users"},
-					{"foreignField", "_id"},
-					{"as", "users"},
-				},
-			},
-		}
+		lookupStage := LookUpStage("user", "users", "_id", "users")
 
 		lookupStageLatestMessage := bson.D{
 			{
@@ -253,7 +230,7 @@ func DeleteUserConversation() gin.HandlerFunc {
 		ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
 		defer cancel()
 
-		// delete all the message that refer the chatId
+		// delete all the messages that refer this chatId
 		messageCollection := database.OpenCollection(database.Client, "message")
 
 		filter := bson.D{
@@ -288,8 +265,6 @@ func CreateGroupChat() gin.HandlerFunc {
 
 		groupName := groupData["groupName"].(string)
 
-		// assuming that the admin user id is sent separately as JWT is not implemented yet,
-		// we can't exactly distinguish between normal and admin user
 		users := groupData["users"].([]interface{})
 
 		aUser, exists := c.Get("_id")
@@ -320,7 +295,7 @@ func CreateGroupChat() gin.HandlerFunc {
 
 		ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
 		defer cancel()
-		// get the chat collection
+
 		chatCollection := database.OpenCollection(database.Client, "chat")
 
 		insId, err := chatCollection.InsertOne(ctx, groupChat)
@@ -341,16 +316,7 @@ func CreateGroupChat() gin.HandlerFunc {
 			},
 		}
 
-		lookupStage := bson.D{
-			{
-				"$lookup", bson.D{
-					{"from", "user"},
-					{"localField", "users"},
-					{"foreignField", "_id"},
-					{"as", "users"},
-				},
-			},
-		}
+		lookupStage := LookUpStage("user", "users", "_id", "users")
 
 		projectStage := bson.D{
 			{
@@ -396,7 +362,6 @@ func RenameGroupChatName() gin.HandlerFunc {
 			log.Panic(err)
 		}
 
-		// get chat collection
 		chatCollection := database.OpenCollection(database.Client, "chat")
 
 		filter := bson.D{{"_id", chatId}}
@@ -438,7 +403,6 @@ func AddUserToGroupChat() gin.HandlerFunc {
 			log.Panic(err)
 		}
 
-		// get chat collection
 		chatCollection := database.OpenCollection(database.Client, "chat")
 
 		filter := bson.D{{"_id", chatId}}
@@ -466,16 +430,7 @@ func AddUserToGroupChat() gin.HandlerFunc {
 			},
 		}
 
-		lookupStage := bson.D{
-			{
-				"$lookup", bson.D{
-					{"from", "user"},
-					{"localField", "users"},
-					{"foreignField", "_id"},
-					{"as", "users"},
-				},
-			},
-		}
+		lookupStage := LookUpStage("user", "users", "_id", "users")
 
 		projectStage := bson.D{
 			{
@@ -505,7 +460,6 @@ func AddUserToGroupChat() gin.HandlerFunc {
 			log.Println(docu)
 		}
 
-		// send the document
 		c.JSON(http.StatusOK, results[0])
 	}
 }
@@ -532,7 +486,6 @@ func DeleteUserFromGroupChat() gin.HandlerFunc {
 			log.Panic(err)
 		}
 
-		// get chat collection
 		chatCollection := database.OpenCollection(database.Client, "chat")
 
 		filter := bson.D{{"_id", chatId}}
@@ -560,16 +513,7 @@ func DeleteUserFromGroupChat() gin.HandlerFunc {
 			},
 		}
 
-		lookupStage := bson.D{
-			{
-				"$lookup", bson.D{
-					{"from", "user"},
-					{"localField", "users"},
-					{"foreignField", "_id"},
-					{"as", "users"},
-				},
-			},
-		}
+		lookupStage := LookUpStage("user", "users", "_id", "users")
 
 		projectStage := bson.D{
 			{
@@ -597,7 +541,6 @@ func DeleteUserFromGroupChat() gin.HandlerFunc {
 			log.Println(docu)
 		}
 
-		// send the document
 		c.JSON(http.StatusOK, results[0])
 	}
 
@@ -664,7 +607,7 @@ func UserExitGroup() gin.HandlerFunc {
 			c.JSON(http.StatusInternalServerError, gin.H{"error": "Error while updating document"})
 			log.Panic(err)
 		}
-		log.Printf("Docu up %v", res.ModifiedCount)
+		log.Printf("Documents deleted: %v", res.ModifiedCount)
 
 		c.JSON(http.StatusOK, gin.H{"message": "Exited from group"})
 	}
