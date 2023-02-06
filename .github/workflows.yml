@@ -4,10 +4,10 @@ name: Web-chat-application
 on: 
   push: 
     paths:
-      - '**.go'
+      - '*.go'
   pull_request:
     paths:
-      - '**.go'
+      - '*.go'
 
 jobs:
   build: 
