@@ -46,14 +46,9 @@ const Signup = () => {
       setLoading(false);
       return;
     }
-    console.log(name, email, password, pic)
 
     try {
-      // make a post request to backend with user credentials
-      const { data } = await axios.post(
-        // As the backend is developed using gin package, the trailing spaces
-        // maters, so be cautious with it..
-        "/api/user/", 
+      const { data } = await axios.post("/api/user/", 
         { 
           name: name, 
           email:email, 
@@ -67,11 +62,10 @@ const Signup = () => {
         }
       );
       
-      console.log(data);
       toast({
         title: "Registration Successful",
         status: "success",
-        duration: 5000,
+        duration: 4000,
         isClosable: true,
         position: "top",
       });
@@ -97,8 +91,8 @@ const Signup = () => {
     }
   };
 
-  // Check for uploaded image, store it in cloudinary sotrage and get url 
-  // of the image/profile 
+  // Check for uploaded image, store it in cloudinary 
+  // sotrage and get url of the image/profile 
   function postDetails(pics){
     setLoading(true)
 
@@ -126,7 +120,6 @@ const Signup = () => {
       }).then((res) => res.json())
         .then((data) => {
           setPic(data.url.toString());
-          console.log(data.url.toString());
           setLoading(false);
         })
         .catch((err) => {
@@ -163,7 +156,7 @@ const Signup = () => {
               placeholder="Enter your email"
               onChange={(e) => setEmail(e.target.value)}
             />
-            <FormHelperText mb="10px">We'll never share your email.</FormHelperText>
+            <FormHelperText mb="10px">We'll never share your email</FormHelperText>
         </FormControl>
 
         <FormControl id="password1" isRequired>
