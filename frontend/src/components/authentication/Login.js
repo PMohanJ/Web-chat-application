@@ -8,7 +8,6 @@ const Login = () => {
   const [show, setShow] = useState(false);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-
   const [loading, setLoading] = useState(false);
   const handleClick = () => setShow(!show);
   const toast = useToast();
@@ -80,7 +79,7 @@ const Login = () => {
         <Input
           value={email}
           type="email"
-          placeholder="Enter Your Email Address"
+          placeholder="Enter your email address"
           onChange={(e) => setEmail(e.target.value)}
         />
       </FormControl>
@@ -113,6 +112,7 @@ const Login = () => {
       </Button>
 
       <Button
+        overflow={"hidden"}
         variant="solid"
         colorScheme="gray"
         width="50%"
@@ -121,7 +121,7 @@ const Login = () => {
             setPassword("123456");
         }}
         >
-        Get Guest User Credentials
+          Guest User 
       </Button>
     </VStack>
     );
