@@ -114,13 +114,7 @@ func AddChatUser() gin.HandlerFunc {
 
 		var createdChat []bson.M
 
-		matchStage := bson.D{
-			{
-				"$match", bson.D{
-					{"_id", insertedId},
-				},
-			},
-		}
+		matchStage := MatchStageBySingleField("_id", insertedId)
 
 		lookupStage := LookUpStage("user", "users", "_id", "users")
 
@@ -284,15 +278,7 @@ func CreateGroupChat() gin.HandlerFunc {
 
 		insertedId := insId.InsertedID.(primitive.ObjectID)
 
-		matchStage := bson.D{
-			{
-				"$match", bson.D{
-					{
-						"_id", insertedId,
-					},
-				},
-			},
-		}
+		matchStage := MatchStageBySingleField("_id", insertedId)
 
 		lookupStage := LookUpStage("user", "users", "_id", "users")
 
@@ -389,15 +375,7 @@ func AddUserToGroupChat() gin.HandlerFunc {
 
 		// User is added to group, now retrieve that document and send into client
 		// so that client can update its data, and perfrom necessary rendering
-		matchStage := bson.D{
-			{
-				"$match", bson.D{
-					{
-						"_id", chatId,
-					},
-				},
-			},
-		}
+		matchStage := MatchStageBySingleField("_id", chatId)
 
 		lookupStage := LookUpStage("user", "users", "_id", "users")
 
@@ -463,15 +441,7 @@ func DeleteUserFromGroupChat() gin.HandlerFunc {
 		log.Printf("Docu up %v", res.ModifiedCount)
 		// User is added to group, now retrieve that document and send into client
 		// so that client can update its data, and perfrom necessary rendering
-		matchStage := bson.D{
-			{
-				"$match", bson.D{
-					{
-						"_id", chatId,
-					},
-				},
-			},
-		}
+		matchStage := MatchStageBySingleField("_id", chatId)
 
 		lookupStage := LookUpStage("user", "users", "_id", "users")
 
@@ -537,7 +507,7 @@ func UserExitGroup() gin.HandlerFunc {
 
 		groupAdmin := chatDocu["groupAdmin"].(primitive.ObjectID)
 
-		// check if admin in exiting Group chat
+		// check if admin is exiting Group chat
 		if userId.Hex() == groupAdmin.Hex() {
 			// delete the whole chat
 			deleteResult, err := chatCollection.DeleteOne(ctx, filter)
@@ -545,7 +515,7 @@ func UserExitGroup() gin.HandlerFunc {
 				c.JSON(http.StatusInternalServerError, gin.H{"error": "Error while querying database"})
 				log.Panic(err)
 			}
-			log.Println("No of docs deleted: ", deleteResult.DeletedCount)
+			log.Println("Documents deleted: ", deleteResult.DeletedCount)
 			c.JSON(http.StatusOK, gin.H{"message": "Exited from group"})
 			return
 		}

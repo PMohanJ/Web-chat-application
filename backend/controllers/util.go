@@ -4,6 +4,16 @@ import (
 	"go.mongodb.org/mongo-driver/bson"
 )
 
+func MatchStageBySingleField(key string, value interface{}) bson.D {
+	return bson.D{
+		{
+			"$match", bson.D{
+				{key, value},
+			},
+		},
+	}
+}
+
 func LookUpStage(from, localField, foreignField, as string) bson.D {
 	return bson.D{
 		{

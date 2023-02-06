@@ -61,16 +61,8 @@ func SendMessage() gin.HandlerFunc {
 		update := bson.D{{"$set", bson.D{{"latestMessage", insertedId}}}}
 		_, err = chatCollection.UpdateOne(ctx, filter, update)
 
-		// get the inserted message document, ans send it to client
-		matchStage := bson.D{
-			{
-				"$match", bson.D{
-					{
-						"_id", insertedId,
-					},
-				},
-			},
-		}
+		// get the inserted message document, and send it to client
+		matchStage := MatchStageBySingleField("_id", insertedId)
 
 		lookupStage := LookUpStage("user", "sender", "_id", "sender")
 
@@ -108,15 +100,7 @@ func GetMessages() gin.HandlerFunc {
 		ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
 		defer cancel()
 
-		matchStage := bson.D{
-			{
-				"$match", bson.D{
-					{
-						"chat", chatId,
-					},
-				},
-			},
-		}
+		matchStage := MatchStageBySingleField("chat", chatId)
 
 		lookupStage := LookUpStage("user", "sender", "_id", "sender")
 
@@ -228,7 +212,7 @@ func DeleteUserMessage() gin.HandlerFunc {
 			log.Panic(err)
 		}
 
-		log.Println("Delete the msg: ", deleteRes.DeletedCount)
+		log.Println("Documents deleted: ", deleteRes.DeletedCount)
 
 		c.Status(http.StatusOK)
 	}
