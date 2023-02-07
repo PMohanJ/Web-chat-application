@@ -25,9 +25,10 @@ func main() {
 	MongoDBURL := os.Getenv("MONGODB_URL")
 	database.DBinstance(MongoDBURL)
 
-	// Allows all origins, not suitable for prod environments
+	ORIGIN := os.Getenv("ORIGIN")
+
 	r.Use(cors.New(cors.Config{
-		AllowOrigins: []string{"http://localhost:3000"},
+		AllowOrigins: []string{ORIGIN},
 		AllowMethods: []string{"PUT", "GET", "POST", "DELETE"},
 		AllowHeaders: []string{"Content-Type", "Authorization"},
 		MaxAge:       12 * time.Hour,
