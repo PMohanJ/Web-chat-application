@@ -6,9 +6,8 @@ import axios from "axios"
 import GroupChatModel from '../utils/GroupChatModel';
 
 const MyChats = ({ fetchAgain }) => {
-  const {selectedChat, setSelectedChat, user, chats, setChats} = ChatState();
+  const {selectedChat, setSelectedChat, user, chats, setChats, latestMessages, setLatestMessages} = ChatState();
   const toast = useToast();
-
   const fetchChats = async() => {
     try {
       const { data } = await axios.get(`/api/chat/`, 
@@ -31,9 +30,22 @@ const MyChats = ({ fetchAgain }) => {
     }
   }
 
+  const getAllLatestMessages = () => {
+    if (chats) {
+      setLatestMessages(chats.map((chat) => ({
+        chatId: chat._id,
+        message: chat.latestMessage.length > 0 ? chat.latestMessage[0].content: "",
+      }))) 
+    }
+  }
+
   useEffect(() => {
     fetchChats();
-  },[fetchAgain])
+  },[fetchAgain]);
+
+  useEffect(() => {
+    getAllLatestMessages();
+  }, [chats])
 
   function getSenderName(chat) {
     if (chat.users[0]._id === user._id) 
@@ -88,7 +100,7 @@ const MyChats = ({ fetchAgain }) => {
                   {chat.isGroupChat? chat.chatName: getSenderName(chat)}
                 </Text>
                 <Text fontSize="small">
-                  {chat.latestMessage.length > 0 ? chat.latestMessage[0].content: ""}
+                  {latestMessages.length > 0 && latestMessages.find((obj) => obj.chatId === chat._id).message}
                 </Text>
               </Box>
             ))}

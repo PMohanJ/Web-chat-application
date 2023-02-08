@@ -11,7 +11,7 @@ import MessagesComp from './MessagesComp';
 var socket = new WebSocket(`ws://${process.env.WDS_SOCKET_HOST}:${process.env.WDS_SOCKET_PORT}${process.env.WDS_SOCKET_PATH}`);
 
 const Chat = ({fetchAgain, setFetchAgain}) => {
-  const {selectedChat, setSelectedChat, user} = ChatState();
+  const {selectedChat, setSelectedChat, user, setChats, chats, latestMessages, setLatestMessages} = ChatState();
   const [messages, setMessages] = useState([]);
   const [loading, setLoading] = useState(false);
   const [newMessage, setNewMessage] = useState("");
@@ -206,34 +206,83 @@ const Chat = ({fetchAgain, setFetchAgain}) => {
         setLoading(false);
     }
   }
-
-  // fetch messages upon changing the selectedChat, 
-  // means user switched to other person to chat with 
-  useEffect(() => {
-    fetchMessages();
-  }, [selectedChat])
   
+  // appends message received from websocket server
   const addMessage = (msg) => {
+    updateLatestMessage(msg)
+
     if (msg.delete) {
       setMessages(messages.filter((obj)=> obj._id !== msg._id));
     }
     else if (msg.isedited) {
       let index = 0;
-        for(let i=0; i<messages.length; i++) {
-          if (messages[i]._id === msg._id){
-            index = i;
-            break;
-          }
+      for(let i=0; i<messages.length; i++) {
+        if (messages[i]._id === msg._id){
+          index = i;
+          break;
         }
-        setMessages([...messages.slice(0, index), msg, ...messages.slice(index+1, messages.length)]);
+      }
+      setMessages([...messages.slice(0, index), msg, ...messages.slice(index+1, messages.length)]);
     } else {
       setMessages([...messages, msg]);
+    }
+  }
+
+  const isLastMessage = (msg) => {
+    let index = 0;
+    for(let i=0; i<messages.length; i++) {
+      if (messages[i]._id === msg._id) {
+        index = i;
+        break;
+      }
+    }
+    console.log("Msg id: ", index)
+    if (index === messages.length - 1) {
+      return true
+    }
+    return false
+  }
+
+  // update latest message upon receiving new msg,
+  // edited msg or deleted msg accordingly
+  const updateLatestMessage = (msg) => {
+    let indexChatId = 0;
+    for(let i=0; i<latestMessages.length; i++) {
+      if(selectedChat._id === latestMessages[i].chatId){
+        indexChatId = i;
+        break;
+      }
+    }
+
+    let islastmessage = isLastMessage(msg)
+
+    let indexDelete = messages.length - 1
+    // if previous message exists
+    if (messages.length > 1 && msg.delete && islastmessage){
+      setLatestMessages([...latestMessages.slice(0, indexChatId), {chatId: selectedChat._id, message: messages[indexDelete - 1].content},
+        ...latestMessages.slice(indexChatId+1, latestMessages.length)]);
+    } 
+
+    else if(msg.isedited && islastmessage) {
+      setLatestMessages([...latestMessages.slice(0, indexChatId), {chatId: selectedChat._id, message: msg.content},
+      ...latestMessages.slice(indexChatId+1, latestMessages.length)]);
+    }
+
+    else if(!msg.delete && !msg.isedited){
+      setLatestMessages([...latestMessages.slice(0, indexChatId), {chatId: selectedChat._id, message: msg.content},
+        ...latestMessages.slice(indexChatId+1, latestMessages.length)]);
     }
   }
 
   const sendmessage = (msg) => {
     socket.send(msg);
   }
+
+  // fetch messages upon changing the selectedChat, which
+  // means user switched to other person to chat with 
+  useEffect(() => {
+    fetchMessages();
+  }, [selectedChat])
 
   // need to handle the reconnection to socket if any interruption 
   // occured to websocket connection
