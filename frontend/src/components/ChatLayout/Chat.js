@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react'
-import { Box, Text, Icon, IconButton, Spinner, FormControl, Input, useToast, MenuButton, MenuList, MenuItem, Menu } from '@chakra-ui/react'
+import { Box, Text, Icon, IconButton, Spinner, FormControl, Input, useToast, MenuButton, MenuList, MenuItem, Menu, InputGroup } from '@chakra-ui/react'
 import { SettingsIcon } from '@chakra-ui/icons'
 import { ChatState } from '../../context/ChatProvider';
 import { ArrowBackIcon } from '@chakra-ui/icons'
@@ -11,12 +11,14 @@ import MessagesComp from './MessagesComp';
 var socket = new WebSocket(`ws://${process.env.WDS_SOCKET_HOST}:${process.env.WDS_SOCKET_PORT}${process.env.WDS_SOCKET_PATH}`);
 
 const Chat = ({fetchAgain, setFetchAgain}) => {
-  const {selectedChat, setSelectedChat, user, setChats, chats, latestMessages, setLatestMessages} = ChatState();
+  const {selectedChat, setSelectedChat, user, latestMessages, setLatestMessages} = ChatState();
   const [messages, setMessages] = useState([]);
   const [loading, setLoading] = useState(false);
   const [newMessage, setNewMessage] = useState("");
   const [editingMessageId, setEditingMessageId] = useState("");
   const toast = useToast();
+  const [isTyping, setIsTyping] = useState(false);
+  const [senderTyped, setSenderTyped] = useState(false);
 
   function getSenderName(chat) {
     if (chat.users[0]._id === user._id) 
@@ -116,7 +118,7 @@ const Chat = ({fetchAgain, setFetchAgain}) => {
 
   const deleteMessage = async(messageId) => {
     try {
-      const { data } = await axios.delete(`/api/message/${messageId}`, 
+      await axios.delete(`/api/message/${messageId}`, 
         {
           headers: {
             "Content-Type": "application/json",
@@ -147,7 +149,7 @@ const Chat = ({fetchAgain, setFetchAgain}) => {
 
   const deleteConversation = async(chatId) => {
     try {
-      const _ = await axios.delete(`/api/chat/${chatId}`, 
+      await axios.delete(`/api/chat/${chatId}`, 
         {
           headers: {
             "Content-Type" : "application/json",
@@ -207,11 +209,25 @@ const Chat = ({fetchAgain, setFetchAgain}) => {
     }
   }
   
+  let clearTypingId;
+
   // appends message received from websocket server
   const addMessage = (msg) => {
-    updateLatestMessage(msg)
+    if (!msg.typing)  updateLatestMessage(msg)
 
-    if (msg.delete) {
+    // typing obj to indicate user typing
+    if (msg.typing) {
+      senderTyping(msg)
+      setIsTyping(true);
+      
+      if(clearTypingId) {
+      clearTimeout(clearTypingId);
+    }
+      clearTypingId = setTimeout(() => {
+        setIsTyping(false);
+      }, 3000); 
+    }
+    else if (msg.delete) {
       setMessages(messages.filter((obj)=> obj._id !== msg._id));
     }
     else if (msg.isedited) {
@@ -222,6 +238,7 @@ const Chat = ({fetchAgain, setFetchAgain}) => {
           break;
         }
       }
+
       setMessages([...messages.slice(0, index), msg, ...messages.slice(index+1, messages.length)]);
     } else {
       setMessages([...messages, msg]);
@@ -236,7 +253,7 @@ const Chat = ({fetchAgain, setFetchAgain}) => {
         break;
       }
     }
-    console.log("Msg id: ", index)
+    
     if (index === messages.length - 1) {
       return true
     }
@@ -271,6 +288,21 @@ const Chat = ({fetchAgain, setFetchAgain}) => {
     else if(!msg.delete && !msg.isedited){
       setLatestMessages([...latestMessages.slice(0, indexChatId), {chatId: selectedChat._id, message: msg.content},
         ...latestMessages.slice(indexChatId+1, latestMessages.length)]);
+    }
+  }
+
+  // sends websocket msg on user typing
+  const handleTyping = (event) => {
+    sendmessage(JSON.stringify({"_id":user._id, "typing": true, "chat": selectedChat._id}));
+  }
+
+  // to know whether typing object is by sender, coz
+  // we don't need to render typing... to sender
+  const senderTyping = (msg) => {
+    if(msg._id === user._id) {
+      setSenderTyped(true)
+    } else {
+      setSenderTyped(false);
     }
   }
 
@@ -371,13 +403,27 @@ const Chat = ({fetchAgain, setFetchAgain}) => {
                 <MessagesComp messages={messages} deleteMessage={deleteMessage} handleEditMessage={handleEditMessage}/>
               </div>}
 
-        <FormControl onKeyDown={handleSendMessage} isRequired mt={3} marginTop="auto" marginBottom={1}>
-          <Input 
-            placeholder="Enter your text" 
-            bg="#E0E0E0"
-            value={newMessage} 
-            onChange={(e) => setNewMessage(e.target.value)}/>
-        </FormControl>
+        <Box mt={3} marginTop="auto" marginBottom={1}>
+          <Text 
+            display={isTyping && !senderTyped? "block": "none"}
+            color="#14ed05"
+            ml={"5px"}
+            fontWeight={"extrabold"}
+          >
+            Typing...
+          </Text>
+          <FormControl onKeyDown={handleSendMessage} isRequired >
+            <InputGroup>
+            </InputGroup>
+            <Input 
+              placeholder="Enter your text" 
+              bg="#E0E0E0"
+              value={newMessage} 
+              onChange={(e) => setNewMessage(e.target.value)}
+              onKeyDown={handleTyping}/>
+          </FormControl>
+        </Box>
+        
       </Box>
   </>
 
