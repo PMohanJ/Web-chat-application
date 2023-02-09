@@ -114,6 +114,12 @@ const SideDrawer = () => {
     }
   }
 
+  const handleOnKeyDown = (event) => {
+    if (event.key === "Enter") {
+      handleSearch();
+    }
+  }
+
    // clearout the searchResults 
    const restoreToDefault = () => {
     setSearchResults([]);
@@ -185,6 +191,7 @@ const SideDrawer = () => {
                 placeholder='Search by name or email...' 
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
+                onKeyDown={handleOnKeyDown}
               />
               <Button 
                 backgroundColor={"#e1e1e8"} 
