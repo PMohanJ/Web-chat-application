@@ -7,7 +7,7 @@ const ChatProvider = ({children}) => {
     const [user, setUser] = useState();
     const [selectedChat, setSelectedChat] = useState();
     const [chats, setChats] = useState([]);
-
+    const [latestMessages, setLatestMessages] = useState([])
     const navigate = useNavigate();
 
     // get the user state of login
@@ -28,7 +28,9 @@ const ChatProvider = ({children}) => {
                 selectedChat,
                 setSelectedChat,
                 chats, 
-                setChats
+                setChats,
+                latestMessages,
+                setLatestMessages
             }}
             >
             {children}
