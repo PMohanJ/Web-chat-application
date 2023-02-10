@@ -293,6 +293,9 @@ const Chat = ({fetchAgain, setFetchAgain}) => {
 
   // sends websocket msg on user typing
   const handleTyping = (event) => {
+    if (event.key === "Enter") {
+      return
+    }
     sendmessage(JSON.stringify({"_id":user._id, "typing": true, "chat": selectedChat._id}));
   }
 
