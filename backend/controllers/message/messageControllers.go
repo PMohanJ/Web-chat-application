@@ -1,4 +1,4 @@
-package controllers
+package message
 
 import (
 	"context"
@@ -7,6 +7,7 @@ import (
 	"time"
 
 	"github.com/gin-gonic/gin"
+	"github.com/pmohanj/web-chat-app/controllers"
 	"github.com/pmohanj/web-chat-app/database"
 	"github.com/pmohanj/web-chat-app/models"
 	"go.mongodb.org/mongo-driver/bson"
@@ -62,11 +63,11 @@ func SendMessage() gin.HandlerFunc {
 		_, err = chatCollection.UpdateOne(ctx, filter, update)
 
 		// get the inserted message document, and send it to client
-		matchStage := MatchStageBySingleField("_id", insertedId)
+		matchStage := controllers.MatchStageBySingleField("_id", insertedId)
 
-		lookupStage := LookUpStage("user", "sender", "_id", "sender")
+		lookupStage := controllers.LookUpStage("user", "sender", "_id", "sender")
 
-		projectStage := ProjectStage("sender.password", "created_at",
+		projectStage := controllers.ProjectStage("sender.password", "created_at",
 			"updated_at", "sender.created_at", "sender.updated_at")
 
 		cursor, err := messageCollection.Aggregate(ctx, mongo.Pipeline{matchStage, lookupStage, projectStage})
@@ -100,11 +101,11 @@ func GetMessages() gin.HandlerFunc {
 		ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
 		defer cancel()
 
-		matchStage := MatchStageBySingleField("chat", chatId)
+		matchStage := controllers.MatchStageBySingleField("chat", chatId)
 
-		lookupStage := LookUpStage("user", "sender", "_id", "sender")
+		lookupStage := controllers.LookUpStage("user", "sender", "_id", "sender")
 
-		projectStage := ProjectStage("users.password", "created_at",
+		projectStage := controllers.ProjectStage("users.password", "created_at",
 			"updated_at", "users.created_at", "users.updated_at")
 
 		cursor, err := messageCollection.Aggregate(ctx, mongo.Pipeline{matchStage, lookupStage, projectStage})
@@ -170,9 +171,9 @@ func EditUserMessage() gin.HandlerFunc {
 			},
 		}
 
-		lookupStage := LookUpStage("user", "sender", "_id", "sender")
+		lookupStage := controllers.LookUpStage("user", "sender", "_id", "sender")
 
-		projectStage := ProjectStage("sender.password", "created_at",
+		projectStage := controllers.ProjectStage("sender.password", "created_at",
 			"updated_at", "sender.created_at", "sender.updated_at")
 
 		cursor, err := messageCollection.Aggregate(ctx, mongo.Pipeline{matchStage, lookupStage, projectStage})

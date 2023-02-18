@@ -1,4 +1,4 @@
-package controllers
+package chat
 
 import (
 	"context"
@@ -8,6 +8,7 @@ import (
 	"time"
 
 	"github.com/gin-gonic/gin"
+	"github.com/pmohanj/web-chat-app/controllers"
 	"github.com/pmohanj/web-chat-app/database"
 	"github.com/pmohanj/web-chat-app/models"
 	"go.mongodb.org/mongo-driver/bson"
@@ -69,9 +70,9 @@ func AddChatUser() gin.HandlerFunc {
 							}}},
 				},
 			}
-			lookupStage := LookUpStage("user", "users", "_id", "users")
+			lookupStage := controllers.LookUpStage("user", "users", "_id", "users")
 
-			projectStage := ProjectStage("users.password", "created_at",
+			projectStage := controllers.ProjectStage("users.password", "created_at",
 				"updated_at", "users.created_at", "users.updated_at")
 
 			var res []bson.M
@@ -114,11 +115,11 @@ func AddChatUser() gin.HandlerFunc {
 
 		var createdChat []bson.M
 
-		matchStage := MatchStageBySingleField("_id", insertedId)
+		matchStage := controllers.MatchStageBySingleField("_id", insertedId)
 
-		lookupStage := LookUpStage("user", "users", "_id", "users")
+		lookupStage := controllers.LookUpStage("user", "users", "_id", "users")
 
-		projectStage := ProjectStage("users.password", "created_at",
+		projectStage := controllers.ProjectStage("users.password", "created_at",
 			"updated_at", "users.created_at", "users.updated_at")
 
 		cursor, err := chatCollection.Aggregate(ctx, mongo.Pipeline{matchStage, lookupStage, projectStage})
@@ -154,7 +155,7 @@ func GetUserChats() gin.HandlerFunc {
 			},
 		}
 
-		lookupStage := LookUpStage("user", "users", "_id", "users")
+		lookupStage := controllers.LookUpStage("user", "users", "_id", "users")
 
 		lookupStageLatestMessage := bson.D{
 			{
@@ -167,7 +168,7 @@ func GetUserChats() gin.HandlerFunc {
 			},
 		}
 
-		projectStage := ProjectStage("users.password", "created_at",
+		projectStage := controllers.ProjectStage("users.password", "created_at",
 			"updated_at", "users.created_at", "users.updated_at")
 
 		ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
@@ -278,11 +279,11 @@ func CreateGroupChat() gin.HandlerFunc {
 
 		insertedId := insId.InsertedID.(primitive.ObjectID)
 
-		matchStage := MatchStageBySingleField("_id", insertedId)
+		matchStage := controllers.MatchStageBySingleField("_id", insertedId)
 
-		lookupStage := LookUpStage("user", "users", "_id", "users")
+		lookupStage := controllers.LookUpStage("user", "users", "_id", "users")
 
-		projectStage := ProjectStage("users.password", "created_at",
+		projectStage := controllers.ProjectStage("users.password", "created_at",
 			"updated_at", "users.created_at", "users.updated_at")
 
 		cursor, err := chatCollection.Aggregate(ctx, mongo.Pipeline{matchStage, lookupStage, projectStage})
@@ -375,11 +376,11 @@ func AddUserToGroupChat() gin.HandlerFunc {
 
 		// User is added to group, now retrieve that document and send into client
 		// so that client can update its data, and perfrom necessary rendering
-		matchStage := MatchStageBySingleField("_id", chatId)
+		matchStage := controllers.MatchStageBySingleField("_id", chatId)
 
-		lookupStage := LookUpStage("user", "users", "_id", "users")
+		lookupStage := controllers.LookUpStage("user", "users", "_id", "users")
 
-		projectStage := ProjectStage("users.password", "created_at",
+		projectStage := controllers.ProjectStage("users.password", "created_at",
 			"updated_at", "users.created_at", "users.updated_at")
 
 		cursor, err := chatCollection.Aggregate(ctx, mongo.Pipeline{matchStage, lookupStage, projectStage})
@@ -441,11 +442,11 @@ func DeleteUserFromGroupChat() gin.HandlerFunc {
 		log.Printf("Docu up %v", res.ModifiedCount)
 		// User is added to group, now retrieve that document and send into client
 		// so that client can update its data, and perfrom necessary rendering
-		matchStage := MatchStageBySingleField("_id", chatId)
+		matchStage := controllers.MatchStageBySingleField("_id", chatId)
 
-		lookupStage := LookUpStage("user", "users", "_id", "users")
+		lookupStage := controllers.LookUpStage("user", "users", "_id", "users")
 
-		projectStage := ProjectStage("users.password", "created_at",
+		projectStage := controllers.ProjectStage("users.password", "created_at",
 			"updated_at", "users.created_at", "users.updated_at")
 
 		cursor, err := chatCollection.Aggregate(ctx, mongo.Pipeline{matchStage, lookupStage, projectStage})
