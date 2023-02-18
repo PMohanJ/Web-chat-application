@@ -38,8 +38,9 @@ func Authenticate() gin.HandlerFunc {
 			c.Set("name", claims.Name)
 			c.Set("email", claims.Email)
 			c.Next()
+		} else {
+			c.JSON(http.StatusUnauthorized, gin.H{"error": "Unauthorized"})
+			c.Abort()
 		}
-		c.JSON(http.StatusUnauthorized, gin.H{"error": "Unauthorized"})
-		c.Abort()
 	}
 }
