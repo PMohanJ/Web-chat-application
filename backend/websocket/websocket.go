@@ -95,6 +95,7 @@ func (ws *WebSockets) HandleClientMessage(clientObj *Client, data map[string]int
 		log.Printf("Client added to list %+v", clientObj)
 	} else {
 
+		data["client"] = clientObj
 		// broadcast the message/data
 		clientObj.WebSockets.Broadcast <- data
 	}
@@ -108,14 +109,19 @@ func (ws *WebSockets) SendMessage() {
 		msg := <-ws.Broadcast
 		chatId := msg["chat"].(string)
 
+		sender := msg["client"].(*Client)
+		delete(msg, "client")
 		// get the chat to which the msg should be send
 		clientsOfThisChat := ws.Clients[chatId]
 		log.Printf("size of chat %v and chatid is: %v", len(clientsOfThisChat), chatId)
 		for _, client := range clientsOfThisChat {
-			err := client.Conn.WriteJSON(msg)
-			if err != nil {
-				log.Panic(err)
+			if client != sender {
+				err := client.Conn.WriteJSON(msg)
+				if err != nil {
+					log.Panic(err)
+				}
 			}
+
 		}
 	}
 }
