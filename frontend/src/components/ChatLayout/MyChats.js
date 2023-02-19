@@ -8,6 +8,7 @@ import GroupChatModel from '../utils/GroupChatModel';
 const MyChats = ({ fetchAgain }) => {
   const {selectedChat, setSelectedChat, user, chats, setChats, latestMessages, setLatestMessages} = ChatState();
   const toast = useToast();
+  
   const fetchChats = async() => {
     try {
       const { data } = await axios.get(`/api/chat/`, 
@@ -31,7 +32,8 @@ const MyChats = ({ fetchAgain }) => {
   }
 
   const getAllLatestMessages = () => {
-    if (chats) {
+    if (chats.length > 0) {
+      //console.log("getAllLatestMsg called in func")
       setLatestMessages(chats.map((chat) => ({
         chatId: chat._id,
         message: chat.latestMessage.length > 0 ? chat.latestMessage[0].content: "",
@@ -41,19 +43,38 @@ const MyChats = ({ fetchAgain }) => {
 
   useEffect(() => {
     fetchChats();
+    //console.log("fetchChats is called");
   },[fetchAgain]);
 
   useEffect(() => {
+    //console.log("GetallMsg is called")
     getAllLatestMessages();
   }, [chats])
 
-  function getSenderName(chat) {
+  const getSenderName = (chat) => {
     if (chat.users[0]._id === user._id) 
       return chat.users[1].name;
     else 
       return chat.users[0].name;
   }
   
+  const getSenderPic = (chat) => {
+    if (chat.users[0]._id === user._id) 
+      return chat.users[1].pic;
+    else 
+      return chat.users[0].pic;
+  }
+
+  const getLatestMessage = (chat) => {
+    if (latestMessages.length > 0) {
+      const obj = latestMessages.find((obj) => obj.chatId === chat._id)
+      if (obj && obj.message) {
+        return obj.message;
+      }
+      return ""
+    }
+  }
+
   return (
     <Box
       display={{base: selectedChat? "none" : "flex", md: "flex"}}
@@ -64,6 +85,7 @@ const MyChats = ({ fetchAgain }) => {
       borderWidth="1px"
       p="5px"
       m="5px"
+      minWidth="250px"
     >
       <Box
         display="flex"
@@ -95,13 +117,23 @@ const MyChats = ({ fetchAgain }) => {
                 borderRadius="5px"
                 p="7px"
                 onClick={() => setSelectedChat(chat)}
+                maxHeight="60px"
+                minWidth="180px"
               >
-                <Text fontSize="large">
-                  {chat.isGroupChat? chat.chatName: getSenderName(chat)}
-                </Text>
-                <Text fontSize="small">
-                  {latestMessages.length > 0 && latestMessages.find((obj) => obj.chatId === chat._id).message}
-                </Text>
+                <Box display="flex" flexDir="row">
+                  <img style={{minWidth:"50px", height:"50px", borderRadius: "50%", border: "3px solid #7479e3"}}
+                    alt="Profile Pic"
+                    src={getSenderPic(chat)}
+                  />
+                  <Box marginLeft="5px">
+                    <Text fontSize="large">
+                      {chat.isGroupChat? chat.chatName: getSenderName(chat)}
+                    </Text>
+                    <p style={{whiteSpace: "nowrap", overflow: "hidden", width:"250px", textOverflow: "ellipsis", fontSize:"14px"}}>
+                      {getLatestMessage(chat)}
+                    </p>
+                  </Box>
+                </Box>
               </Box>
             ))}
         </Stack>

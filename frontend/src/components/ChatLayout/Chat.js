@@ -19,14 +19,22 @@ const Chat = ({fetchAgain, setFetchAgain}) => {
   const toast = useToast();
   const [isTyping, setIsTyping] = useState(false);
 
-  function getSenderName(chat) {
+  const getSenderName = (chat) => {
     if (chat.users[0]._id === user._id) 
       return chat.users[1].name;
     else 
       return chat.users[0].name;
   }
 
-  function getSenderObj(chat){
+  const getSenderPic = (chat) => {
+    if (chat.users[0]._id === user._id) 
+      return chat.users[1].pic;
+    else 
+      return chat.users[0].pic;
+  }
+
+
+  const getSenderObj = (chat) => {
     if (chat.users[0]._id === user._id) 
       return chat.users[1];
     else 
@@ -167,6 +175,7 @@ const Chat = ({fetchAgain, setFetchAgain}) => {
       )
       setSelectedChat("");
       setFetchAgain(!fetchAgain);
+
       toast({
         title: "Chat deleted successfully",
         status: "success",
@@ -362,7 +371,7 @@ const Chat = ({fetchAgain, setFetchAgain}) => {
         h="10%"
         borderRadius="xl"
         boxShadow="0 5px 10px gray"
-        
+        minHeight="60px"
       >
         <IconButton 
           display={{base: "flex", md: "none"}}
@@ -370,9 +379,16 @@ const Chat = ({fetchAgain, setFetchAgain}) => {
           onClick={() => setSelectedChat("")}
         />
         
-        <Text fontSize="2xl">
-          {selectedChat.isGroupChat? selectedChat.chatName: getSenderName(selectedChat)}
-        </Text>
+        <Box display="flex" flexDir="row">
+          <img style={{width:"50px", height:"50px", borderRadius: "50%"}}
+            alt="Profile Pic"
+            src={getSenderPic(selectedChat)}
+          />
+
+          <Text fontSize="2xl" marginLeft="5px" marginTop="5px">
+            {selectedChat.isGroupChat? selectedChat.chatName: getSenderName(selectedChat)}
+          </Text>
+        </Box>
 
         {!selectedChat.isGroupChat? 
             <div>
