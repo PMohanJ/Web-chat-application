@@ -18,7 +18,6 @@ const Chat = ({fetchAgain, setFetchAgain}) => {
   const [editingMessageId, setEditingMessageId] = useState("");
   const toast = useToast();
   const [isTyping, setIsTyping] = useState(false);
-  const [senderTyped, setSenderTyped] = useState(false);
 
   function getSenderName(chat) {
     if (chat.users[0]._id === user._id) 
@@ -67,16 +66,19 @@ const Chat = ({fetchAgain, setFetchAgain}) => {
             }
           }
         )
-        // send the message to server, so that server will broadcast it
-        sendmessage(JSON.stringify(data));
+        setSentMessage(data);
         setNewMessage("");
+        updateLatestMessage(data);
+
+        // send the message to server, to broadcast it
+        sendmessage(JSON.stringify(data));
       } catch (error) {
           toast({
             title: "Failed to send message",
             status: "error",
             duration: 4000,
             isClosable: true,
-            position: "botton",
+            position: "bottom",
           });
       }
   }
@@ -95,8 +97,12 @@ const Chat = ({fetchAgain, setFetchAgain}) => {
             }
           }
         )
-        // send the message to server, so that server will broadcast it
+        setEditedMessage(data);
+        updateLatestMessage(data);
+
+        // send the message to server, to broadcast it
         sendmessage(JSON.stringify(data));
+
         toast({
           title: "Message edited",
           status: "success",
@@ -111,7 +117,7 @@ const Chat = ({fetchAgain, setFetchAgain}) => {
             status: "error",
             duration: 4000,
             isClosable: true,
-            position: "botton",
+            position: "bottom",
           });
       }
   }
@@ -126,8 +132,10 @@ const Chat = ({fetchAgain, setFetchAgain}) => {
           }
         }
       )
+      setMessages(messages.filter((obj)=> obj._id !== messageId));
+      updateLatestMessage({"_id":messageId, "delete": true, "chat": selectedChat._id});
 
-      // send websocket server to delete this message on all active users chats
+      // send to websocker server to delete this msg on receiver side
       sendmessage(JSON.stringify({"_id":messageId, "delete": true, "chat": selectedChat._id}));
       toast({
         title: "Message deleted",
@@ -142,7 +150,7 @@ const Chat = ({fetchAgain, setFetchAgain}) => {
         status: "error",
         duration: 4000,
         isClosable: true,
-        position: "botton",
+        position: "bottom",
       });
     }
   }
@@ -172,7 +180,7 @@ const Chat = ({fetchAgain, setFetchAgain}) => {
           status: "error",
           duration: 4000,
           isClosable: true,
-          position: "botton",
+          position: "bottom",
         });
     }
   }
@@ -203,21 +211,39 @@ const Chat = ({fetchAgain, setFetchAgain}) => {
           status: "error",
           duration: 4000,
           isClosable: true,
-          position: "botton",
+          position: "bottom",
         });
         setLoading(false);
     }
   }
   
+  const setSentMessage = (msg) => {
+    setMessages([...messages, msg]);
+  } 
+
+  const setEditedMessage = (msg) => {
+    let index = 0;
+      for(let i=0; i<messages.length; i++) {
+        if (messages[i]._id === msg._id){
+          index = i;
+          break;
+        }
+      }
+      setMessages([...messages.slice(0, index), msg, ...messages.slice(index+1, messages.length)]);
+  }
+
+  const setDeletedMessage = (messageId) => {
+    setMessages(messages.filter((obj)=> obj._id !== messageId));
+  }
+  
   let clearTypingId;
 
   // appends message received from websocket server
-  const addMessage = (msg) => {
+  const receiveMessage = (msg) => {
     if (!msg.typing)  updateLatestMessage(msg)
 
     // typing obj to indicate user typing
     if (msg.typing) {
-      senderTyping(msg)
       setIsTyping(true);
       
       if(clearTypingId) {
@@ -228,20 +254,12 @@ const Chat = ({fetchAgain, setFetchAgain}) => {
       }, 3000); 
     }
     else if (msg.delete) {
-      setMessages(messages.filter((obj)=> obj._id !== msg._id));
+      setDeletedMessage(msg._id);
     }
     else if (msg.isedited) {
-      let index = 0;
-      for(let i=0; i<messages.length; i++) {
-        if (messages[i]._id === msg._id){
-          index = i;
-          break;
-        }
-      }
-
-      setMessages([...messages.slice(0, index), msg, ...messages.slice(index+1, messages.length)]);
+      setEditedMessage(msg);
     } else {
-      setMessages([...messages, msg]);
+        setSentMessage(msg);
     }
   }
 
@@ -299,16 +317,6 @@ const Chat = ({fetchAgain, setFetchAgain}) => {
     sendmessage(JSON.stringify({"_id":user._id, "typing": true, "chat": selectedChat._id}));
   }
 
-  // to know whether typing object is by sender, coz
-  // we don't need to render typing... to sender
-  const senderTyping = (msg) => {
-    if(msg._id === user._id) {
-      setSenderTyped(true)
-    } else {
-      setSenderTyped(false);
-    }
-  }
-
   const sendmessage = (msg) => {
     socket.send(msg);
   }
@@ -329,7 +337,7 @@ const Chat = ({fetchAgain, setFetchAgain}) => {
     }
 
     socket.onmessage = (msg) => {
-        addMessage(JSON.parse(msg.data));
+        receiveMessage(JSON.parse(msg.data));
     }
 
     socket.onclose = (event) => {
@@ -408,7 +416,7 @@ const Chat = ({fetchAgain, setFetchAgain}) => {
 
         <Box mt={3} marginTop="auto" marginBottom={1}>
           <Text 
-            display={isTyping && !senderTyped? "block": "none"}
+            display={isTyping? "block": "none"}
             color="#14ed05"
             ml={"5px"}
             fontWeight={"extrabold"}
