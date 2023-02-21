@@ -40,13 +40,11 @@ const SideDrawer = () => {
           }
         }
       )
-      console.log(data);
       if (!chats) {
           setChats([data]);
       }
       else if (!chats.find((c) => c._id === data._id)) {
         setChats([data, ...chats]);
-        console.log("added")
       }
 
       setLoading(false);
