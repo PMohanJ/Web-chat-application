@@ -3,7 +3,6 @@ package chat
 import (
 	"context"
 	"errors"
-	"fmt"
 	"log"
 	"net/http"
 	"time"
@@ -239,8 +238,10 @@ func CreateGroupChat() gin.HandlerFunc {
 
 		groupName := groupData["groupName"].(string)
 
-		groupPic := groupData["groupPic"].(string)
-		fmt.Println("Group pic", groupPic)
+		groupPic, ok := groupData["groupPic"].(string)
+		if !ok || groupPic == "" {
+			groupPic = controllers.GetDefaultGroupPic()
+		}
 
 		users := groupData["users"].([]interface{})
 
