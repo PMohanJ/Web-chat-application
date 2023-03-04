@@ -3,6 +3,7 @@ package chat
 import (
 	"context"
 	"errors"
+	"fmt"
 	"log"
 	"net/http"
 	"time"
@@ -238,6 +239,9 @@ func CreateGroupChat() gin.HandlerFunc {
 
 		groupName := groupData["groupName"].(string)
 
+		groupPic := groupData["groupPic"].(string)
+		fmt.Println("Group pic", groupPic)
+
 		users := groupData["users"].([]interface{})
 
 		aUser, exists := c.Get("_id")
@@ -264,6 +268,7 @@ func CreateGroupChat() gin.HandlerFunc {
 			ChatName:    groupName,
 			Users:       usersIds,
 			GroupAdmin:  adminUser,
+			GroupPic:    groupPic,
 		}
 
 		ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
