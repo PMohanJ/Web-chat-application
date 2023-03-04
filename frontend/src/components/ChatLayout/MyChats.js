@@ -58,7 +58,11 @@ const MyChats = ({ fetchAgain }) => {
       return chat.users[0].name;
   }
   
-  const getSenderPic = (chat) => {
+  const getPic = (chat) => {
+    if (chat.isGroupChat) {
+      return chat.groupPic;
+    }
+
     if (chat.users[0]._id === user._id) 
       return chat.users[1].pic;
     else 
@@ -123,7 +127,7 @@ const MyChats = ({ fetchAgain }) => {
                 <Box display="flex" flexDir="row">
                   <img style={{minWidth:"50px", height:"50px", borderRadius: "50%", border: "3px solid #7479e3"}}
                     alt="Profile Pic"
-                    src={getSenderPic(chat)}
+                    src={getPic(chat)}
                   />
                   <Box marginLeft="5px">
                     <Text fontSize="large">
