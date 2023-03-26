@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"context"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"log"
 	"net/http"
@@ -48,9 +49,12 @@ func TestMain(m *testing.M) {
 	routes.AddChatRoutes(api)
 
 	status := setupPhase()
-	if status != 0 {
+	if status != nil {
+		fmt.Println(err)
+		tearDownPhase()
 		os.Exit(1)
 	}
+
 	code := m.Run()
 	tearDownPhase()
 	database.CloseDBinstance()
@@ -58,37 +62,37 @@ func TestMain(m *testing.M) {
 }
 
 // setupInitialPhase generates data to perform test operations
-func setupPhase() int {
-	statusCreateUsers := createUsers()
-	if statusCreateUsers != 0 {
-		return statusCreateUsers
+func setupPhase() error {
+	statusCreateUsers, err := createUsers()
+	if statusCreateUsers != 0 || err != nil {
+		return err
 	}
 
-	statusInitiateChats := initiateChats()
-	if statusInitiateChats != 0 {
-		return statusInitiateChats
+	statusInitiateChats, err := initiateChats()
+	if statusInitiateChats != 0 || err != nil {
+		return err
 	}
 
-	statusCreateMessages := createMessages()
-	if statusCreateMessages != 0 {
-		return statusCreateMessages
+	statusCreateMessages, err := createMessages()
+	if statusCreateMessages != 0 || err != nil {
+		return err
 	}
 
-	statusCreateGroupChat := createGroupChat()
-	if statusCreateGroupChat != 0 {
-		return statusCreateGroupChat
+	statusCreateGroupChat, err := createGroupChat()
+	if statusCreateGroupChat != 0 || err != nil {
+		return err
 	}
-	return 0
+	return nil
 }
 
-func createUsers() int {
+func createUsers() (int, error) {
 	input0 := []byte(`{"name":"User0", "email":"user0@gmail.com", "password":"haha123"}`)
 	req0, _ := http.NewRequest("POST", "/api/user/", bytes.NewBuffer(input0))
 
 	response0 := httptest.NewRecorder()
 	router.ServeHTTP(response0, req0)
 	if response0.Code != 200 {
-		return response0.Code
+		return response0.Code, errors.New("Failed to create User0")
 	}
 
 	var resUser0 map[string]string
@@ -101,7 +105,7 @@ func createUsers() int {
 	response1 := httptest.NewRecorder()
 	router.ServeHTTP(response1, req1)
 	if response1.Code != 200 {
-		return response1.Code
+		return response1.Code, errors.New("Failed to create User1")
 	}
 
 	var resUser1 map[string]string
@@ -114,17 +118,17 @@ func createUsers() int {
 	response2 := httptest.NewRecorder()
 	router.ServeHTTP(response2, req2)
 	if response2.Code != 200 {
-		return response2.Code
+		return response2.Code, errors.New("Failed to create User2")
 	}
 
 	var resUser2 map[string]string
 	_ = json.NewDecoder(response2.Body).Decode(&resUser2)
 	user2Id = resUser2["_id"]
 
-	return 0
+	return 0, nil
 }
 
-func initiateChats() int {
+func initiateChats() (int, error) {
 
 	// initiate chat
 	data1 := fmt.Sprintf(`{"userToBeAdded":"%s"}`, user2Id)
@@ -135,7 +139,7 @@ func initiateChats() int {
 	response1 := httptest.NewRecorder()
 	router.ServeHTTP(response1, req1)
 	if response1.Code != 200 {
-		return response1.Code
+		return response1.Code, errors.New("Failed to initiated chat")
 	}
 
 	var resChat map[string]interface{}
@@ -151,17 +155,17 @@ func initiateChats() int {
 	response2 := httptest.NewRecorder()
 	router.ServeHTTP(response2, req2)
 	if response2.Code != 200 {
-		return response2.Code
+		return response2.Code, errors.New("Failed to initiate chat for TestDeleteUserConversation")
 	}
 
 	var resChatDelete map[string]interface{}
 	_ = json.NewDecoder(response2.Body).Decode(&resChatDelete)
 	chatIdDelete, _ = resChatDelete["_id"].(string)
 
-	return 0
+	return 0, nil
 }
 
-func createMessages() int {
+func createMessages() (int, error) {
 	// message for TestDeleteUserMessage
 	data1 := fmt.Sprintf(`{"chatId":"%s", "content":"How are you bro"}`, chatId)
 	input1 := []byte(data1)
@@ -172,7 +176,7 @@ func createMessages() int {
 	router.ServeHTTP(response1, req1)
 
 	if response1.Code != 200 {
-		return response1.Code
+		return response1.Code, errors.New("Failed to create message for TestDeleteUserMessage")
 	}
 
 	var resMessageDelete map[string]interface{}
@@ -190,7 +194,7 @@ func createMessages() int {
 	router.ServeHTTP(response2, req2)
 
 	if response2.Code != 200 {
-		return response2.Code
+		return response2.Code, errors.New("Failed to create message for TestEditUserMessage")
 	}
 
 	var resMessageEdit map[string]interface{}
@@ -198,10 +202,10 @@ func createMessages() int {
 
 	messageIdEdit = resMessageEdit["_id"].(string)
 
-	return 0
+	return 0, nil
 }
 
-func createGroupChat() int {
+func createGroupChat() (int, error) {
 	// create a group chat for user1 and user2
 	data := fmt.Sprintf(`{"groupName":"group for testing", "users":["%s"]}`, user2Id)
 	input := []byte(data)
@@ -212,13 +216,13 @@ func createGroupChat() int {
 	router.ServeHTTP(response, request)
 
 	if response.Code != 200 {
-		return response.Code
+		return response.Code, errors.New("Failed to create group chat")
 	}
 
 	var result map[string]interface{}
 	_ = json.NewDecoder(response.Body).Decode(&result)
 	chatIdGroup, _ = result["_id"].(string)
-	return 0
+	return 0, nil
 }
 
 func tearDownPhase() {

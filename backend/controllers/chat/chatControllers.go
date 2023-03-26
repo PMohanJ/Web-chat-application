@@ -238,6 +238,11 @@ func CreateGroupChat() gin.HandlerFunc {
 
 		groupName := groupData["groupName"].(string)
 
+		groupPic, ok := groupData["groupPic"].(string)
+		if !ok || groupPic == "" {
+			groupPic = controllers.GetDefaultGroupPic()
+		}
+
 		users := groupData["users"].([]interface{})
 
 		aUser, exists := c.Get("_id")
@@ -264,6 +269,7 @@ func CreateGroupChat() gin.HandlerFunc {
 			ChatName:    groupName,
 			Users:       usersIds,
 			GroupAdmin:  adminUser,
+			GroupPic:    groupPic,
 		}
 
 		ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
