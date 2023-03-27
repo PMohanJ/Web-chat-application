@@ -7,8 +7,8 @@ import (
 	"time"
 
 	"github.com/gin-gonic/gin"
+	"github.com/pmohanj/web-chat-app/bootstrap"
 	"github.com/pmohanj/web-chat-app/controllers"
-	"github.com/pmohanj/web-chat-app/database"
 	"github.com/pmohanj/web-chat-app/models"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
@@ -47,7 +47,7 @@ func SendMessage() gin.HandlerFunc {
 		}
 
 		// get the message collection
-		messageCollection := database.OpenCollection(database.Client, "message")
+		messageCollection := bootstrap.OpenCollection(bootstrap.Client, "message")
 
 		ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
 		defer cancel()
@@ -56,7 +56,7 @@ func SendMessage() gin.HandlerFunc {
 		insertedId := insId.InsertedID.(primitive.ObjectID)
 
 		// get chat collection to update the latestMessage field
-		chatCollection := database.OpenCollection(database.Client, "chat")
+		chatCollection := bootstrap.OpenCollection(bootstrap.Client, "chat")
 
 		filter := bson.D{{"_id", chatId}}
 		update := bson.D{{"$set", bson.D{{"latestMessage", insertedId}}}}
@@ -96,7 +96,7 @@ func GetMessages() gin.HandlerFunc {
 		}
 
 		// get messages collection
-		messageCollection := database.OpenCollection(database.Client, "message")
+		messageCollection := bootstrap.OpenCollection(bootstrap.Client, "message")
 
 		ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
 		defer cancel()
@@ -147,7 +147,7 @@ func EditUserMessage() gin.HandlerFunc {
 			log.Panic(err)
 		}
 
-		messageCollection := database.OpenCollection(database.Client, "message")
+		messageCollection := bootstrap.OpenCollection(bootstrap.Client, "message")
 
 		ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
 		defer cancel()
@@ -202,7 +202,7 @@ func DeleteUserMessage() gin.HandlerFunc {
 			log.Panic(err)
 		}
 
-		messageCollection := database.OpenCollection(database.Client, "message")
+		messageCollection := bootstrap.OpenCollection(bootstrap.Client, "message")
 
 		ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
 		defer cancel()

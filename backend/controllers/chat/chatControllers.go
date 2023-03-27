@@ -8,8 +8,8 @@ import (
 	"time"
 
 	"github.com/gin-gonic/gin"
+	"github.com/pmohanj/web-chat-app/bootstrap"
 	"github.com/pmohanj/web-chat-app/controllers"
-	"github.com/pmohanj/web-chat-app/database"
 	"github.com/pmohanj/web-chat-app/models"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
@@ -31,7 +31,7 @@ func AddChatUser() gin.HandlerFunc {
 		ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
 		defer cancel()
 
-		chatCollection := database.OpenCollection(database.Client, "chat")
+		chatCollection := bootstrap.OpenCollection(bootstrap.Client, "chat")
 
 		// get the ids and convert them back to primitive.ObjectID format for querying
 		id1, exists := c.Get("_id")
@@ -143,7 +143,7 @@ func GetUserChats() gin.HandlerFunc {
 		}
 		userId := id.(primitive.ObjectID)
 
-		chatCollection := database.OpenCollection(database.Client, "chat")
+		chatCollection := bootstrap.OpenCollection(bootstrap.Client, "chat")
 
 		matchStage := bson.D{
 			{
@@ -204,7 +204,7 @@ func DeleteUserConversation() gin.HandlerFunc {
 		defer cancel()
 
 		// delete all the messages that refer this chatId
-		messageCollection := database.OpenCollection(database.Client, "message")
+		messageCollection := bootstrap.OpenCollection(bootstrap.Client, "message")
 
 		filter := bson.D{
 			{"chat", chatId},
@@ -216,7 +216,7 @@ func DeleteUserConversation() gin.HandlerFunc {
 		}
 
 		// delete the chat document too
-		chatCollection := database.OpenCollection(database.Client, "chat")
+		chatCollection := bootstrap.OpenCollection(bootstrap.Client, "chat")
 		_, err = chatCollection.DeleteOne(ctx, bson.D{{"_id", chatId}})
 		if err != nil {
 			c.JSON(http.StatusInternalServerError, gin.H{"error": "Error while deleting chat document"})
@@ -275,7 +275,7 @@ func CreateGroupChat() gin.HandlerFunc {
 		ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
 		defer cancel()
 
-		chatCollection := database.OpenCollection(database.Client, "chat")
+		chatCollection := bootstrap.OpenCollection(bootstrap.Client, "chat")
 
 		insId, err := chatCollection.InsertOne(ctx, groupChat)
 		if err != nil {
@@ -324,7 +324,7 @@ func RenameGroupChatName() gin.HandlerFunc {
 			log.Panic(err)
 		}
 
-		chatCollection := database.OpenCollection(database.Client, "chat")
+		chatCollection := bootstrap.OpenCollection(bootstrap.Client, "chat")
 
 		filter := bson.D{{"_id", chatId}}
 
@@ -365,7 +365,7 @@ func AddUserToGroupChat() gin.HandlerFunc {
 			log.Panic(err)
 		}
 
-		chatCollection := database.OpenCollection(database.Client, "chat")
+		chatCollection := bootstrap.OpenCollection(bootstrap.Client, "chat")
 
 		filter := bson.D{{"_id", chatId}}
 
@@ -431,7 +431,7 @@ func DeleteUserFromGroupChat() gin.HandlerFunc {
 			log.Panic(err)
 		}
 
-		chatCollection := database.OpenCollection(database.Client, "chat")
+		chatCollection := bootstrap.OpenCollection(bootstrap.Client, "chat")
 
 		filter := bson.D{{"_id", chatId}}
 
@@ -499,7 +499,7 @@ func UserExitGroup() gin.HandlerFunc {
 		userId := uId.(primitive.ObjectID)
 
 		// get chat collection
-		chatCollection := database.OpenCollection(database.Client, "chat")
+		chatCollection := bootstrap.OpenCollection(bootstrap.Client, "chat")
 
 		filter := bson.D{{"_id", chatId}}
 

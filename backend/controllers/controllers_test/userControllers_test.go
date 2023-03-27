@@ -16,7 +16,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/go-playground/assert/v2"
 	"github.com/joho/godotenv"
-	"github.com/pmohanj/web-chat-app/database"
+	"github.com/pmohanj/web-chat-app/bootstrap"
 	"github.com/pmohanj/web-chat-app/models"
 	"github.com/pmohanj/web-chat-app/routes"
 )
@@ -40,7 +40,7 @@ func TestMain(m *testing.M) {
 	}
 	MongoDBURL := os.Getenv("MONGODB_URL_TESTING")
 	// Initiate Databse
-	database.DBinstance(MongoDBURL)
+	bootstrap.DBinstance(MongoDBURL)
 
 	// setup user routes
 	api := router.Group("/api")
@@ -57,7 +57,7 @@ func TestMain(m *testing.M) {
 
 	code := m.Run()
 	tearDownPhase()
-	database.CloseDBinstance()
+	bootstrap.CloseDBinstance()
 	os.Exit(code)
 }
 
@@ -229,9 +229,9 @@ func tearDownPhase() {
 	ctx, cancel := context.WithTimeout(context.Background(), time.Second*10)
 	defer cancel()
 
-	chatCollection := database.OpenCollection(database.Client, "chat")
-	messageCollection := database.OpenCollection(database.Client, "message")
-	userCollection := database.OpenCollection(database.Client, "user")
+	chatCollection := bootstrap.OpenCollection(bootstrap.Client, "chat")
+	messageCollection := bootstrap.OpenCollection(bootstrap.Client, "message")
+	userCollection := bootstrap.OpenCollection(bootstrap.Client, "user")
 
 	chatCollection.Drop(ctx)
 	messageCollection.Drop(ctx)

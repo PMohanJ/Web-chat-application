@@ -8,7 +8,7 @@ import (
 	"time"
 
 	"github.com/gin-gonic/gin"
-	"github.com/pmohanj/web-chat-app/database"
+	"github.com/pmohanj/web-chat-app/bootstrap"
 	"github.com/pmohanj/web-chat-app/helpers"
 	"github.com/pmohanj/web-chat-app/models"
 	"go.mongodb.org/mongo-driver/bson"
@@ -34,7 +34,7 @@ func RegisterUser() gin.HandlerFunc {
 		defer cancel()
 
 		// get the collection to perform querying
-		userCollection := database.OpenCollection(database.Client, "user")
+		userCollection := bootstrap.OpenCollection(bootstrap.Client, "user")
 
 		// check if user is already resgistered
 		var temp models.User
@@ -88,7 +88,7 @@ func AuthUser() gin.HandlerFunc {
 		ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
 		defer cancel()
 
-		userCollection := database.OpenCollection(database.Client, "user")
+		userCollection := bootstrap.OpenCollection(bootstrap.Client, "user")
 
 		var registeredUser bson.M
 
@@ -135,7 +135,7 @@ func SearchUsers() gin.HandlerFunc {
 		defer cancel()
 
 		// get the user collection
-		userCollection := database.OpenCollection(database.Client, "user")
+		userCollection := bootstrap.OpenCollection(bootstrap.Client, "user")
 
 		matchStage := bson.D{
 			{"$match", bson.D{
