@@ -18,11 +18,11 @@ type Collection interface {
 	FindOne(context.Context, interface{}) SingleResult
 	InsertOne(context.Context, interface{}) (interface{}, error)
 	InsertMany(context.Context, []interface{}) ([]interface{}, error)
-	UpdateOne(context.Context, interface{}, interface{}) (interface{}, error)
-	UpdateMany(context.Context, interface{}, interface{}) ([]interface{}, error)
+	UpdateOne(context.Context, interface{}, interface{}) (*mongo.UpdateResult, error)
+	UpdateMany(context.Context, interface{}, interface{}) (*mongo.UpdateResult, error)
 	DeleteOne(context.Context, interface{}) (int64, error)
 	DeleteMany(context.Context, interface{}) (int64, error)
-	Aggregrate(context.Context, interface{}) (Cursor, error)
+	Aggregate(context.Context, interface{}) (Cursor, error)
 }
 
 type SingleResult interface {
@@ -100,37 +100,66 @@ func (md *mongoDatabase) Client() Client {
 }
 
 func (mcl *mongoCollection) Find(ctx context.Context, filter interface{}) (Cursor, error) {
-
+	cursor, err := mcl.coll.Find(ctx, filter)
+	return &mongoCursor{cur: cursor}, err
 }
 
 func (mcl *mongoCollection) FindOne(ctx context.Context, filter interface{}) SingleResult {
-
+	singleresult := mcl.coll.FindOne(ctx, filter)
+	return &mongoSingleResult{sr: singleresult}
 }
 
 func (mcl *mongoCollection) InsertOne(ctx context.Context, document interface{}) (interface{}, error) {
-
+	insertId, err := mcl.coll.InsertOne(ctx, document)
+	return insertId.InsertedID, err
 }
 
-func (mcl *mongoCollection) InsertMany(ctx context.Context, document []interface{}) ([]interface{}, error) {
-
+func (mcl *mongoCollection) InsertMany(ctx context.Context, documents []interface{}) ([]interface{}, error) {
+	insertId, err := mcl.coll.InsertMany(ctx, documents)
+	return insertId.InsertedIDs, err
 }
 
-func (mcl *mongoCollection) UpdateOne(ctx context.Context, filter interface{}, update interface{}) (interface{}, error) {
-
+func (mcl *mongoCollection) UpdateOne(ctx context.Context, filter interface{}, update interface{}) (*mongo.UpdateResult, error) {
+	updateResult, err := mcl.coll.UpdateOne(ctx, filter, update)
+	return updateResult, err
 }
 
-func (mcl *mongoCollection) UpdareMany(ctx context.Context, filter interface{}, update interface{}) ([]interface{}, error) {
-
+func (mcl *mongoCollection) UpdateMany(ctx context.Context, filter interface{}, update interface{}) (*mongo.UpdateResult, error) {
+	updateResult, err := mcl.coll.UpdateMany(ctx, filter, update)
+	return updateResult, err
 }
 
 func (mcl *mongoCollection) DeleteOne(ctx context.Context, filter interface{}) (int64, error) {
-
+	deletedCount, err := mcl.coll.DeleteOne(ctx, filter)
+	return deletedCount.DeletedCount, err
 }
 
 func (mcl *mongoCollection) DeleteMany(ctx context.Context, filter interface{}) (int64, error) {
-
+	deletedCount, err := mcl.coll.DeleteMany(ctx, filter)
+	return deletedCount.DeletedCount, err
 }
 
 func (mcl *mongoCollection) Aggregate(ctx context.Context, pipeline interface{}) (Cursor, error) {
+	cursor, err := mcl.coll.Aggregate(ctx, pipeline)
+	return &mongoCursor{cur: cursor}, err
+}
 
+func (mc *mongoCursor) All(ctx context.Context, result interface{}) error {
+	return mc.cur.All(ctx, result)
+}
+
+func (mc *mongoCursor) Decode(v interface{}) error {
+	return mc.cur.Decode(v)
+}
+
+func (mc *mongoCursor) Next(ctx context.Context) bool {
+	return mc.cur.Next(ctx)
+}
+
+func (mc *mongoCursor) Close(ctx context.Context) error {
+	return mc.cur.Close(ctx)
+}
+
+func (msr *mongoSingleResult) Decode(v interface{}) error {
+	return msr.sr.Decode(v)
 }
