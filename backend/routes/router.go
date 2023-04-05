@@ -1,16 +1,20 @@
 package routes
 
 import (
+	"time"
+
 	"github.com/gin-gonic/gin"
+	"github.com/pmohanj/web-chat-app/bootstrap"
+	"github.com/pmohanj/web-chat-app/mongo"
 	"github.com/pmohanj/web-chat-app/websocket"
 )
 
-func SetupRoutes(router *gin.Engine) {
-	api := router.Group("/api")
+func SetupRoutes(gin *gin.Engine, env *bootstrap.Env, timeout time.Duration, db mongo.Database) {
+	api := gin.Group("/api")
 
-	AddUserRoutes(api)
-	AddChatRoutes(api)
-	AddMessageRoutes(api)
+	AddUserRoutes(api, env, timeout, db)
+	//AddChatRoutes(api)
+	//AddMessageRoutes(api)
 
 	// create websocketserver
 	websocket := websocket.CreateWebSocketsServer()
