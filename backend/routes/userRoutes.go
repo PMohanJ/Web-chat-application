@@ -5,7 +5,7 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/pmohanj/web-chat-app/bootstrap"
-	"github.com/pmohanj/web-chat-app/controllers/chatControllers"
+	"github.com/pmohanj/web-chat-app/controllers/userControllers"
 	"github.com/pmohanj/web-chat-app/domain"
 	"github.com/pmohanj/web-chat-app/mongo"
 	"github.com/pmohanj/web-chat-app/repository"
@@ -26,7 +26,7 @@ func AddUserRoutes(router *gin.RouterGroup, env *bootstrap.Env, timeout time.Dur
 func signUpRoute(r *gin.RouterGroup, endPath string, env *bootstrap.Env, timeout time.Duration, db mongo.Database) {
 	ur := repository.NewUserRepository(db, domain.CollectionUser)
 
-	sc := chatControllers.SingUpController{
+	sc := userControllers.SingUpController{
 		SingupUseCase: usecase.NewSignupUseCase(ur, timeout),
 		Env:           env,
 	}
@@ -37,7 +37,7 @@ func signUpRoute(r *gin.RouterGroup, endPath string, env *bootstrap.Env, timeout
 func loginRoute(r *gin.RouterGroup, endPath string, env *bootstrap.Env, timeout time.Duration, db mongo.Database) {
 	ur := repository.NewUserRepository(db, domain.CollectionUser)
 
-	lc := chatControllers.LoginController{
+	lc := userControllers.LoginController{
 		LoginUseCase: usecase.NewLoginUseCase(ur, timeout),
 		Env:          env,
 	}
