@@ -1,10 +1,10 @@
 package bootstrap
 
-import "go.mongodb.org/mongo-driver/mongo"
+import "github.com/pmohanj/web-chat-app/mongo"
 
 type Application struct {
 	Env   *Env
-	Mongo *mongo.Client
+	Mongo mongo.Client
 }
 
 func App() Application {
@@ -16,5 +16,5 @@ func App() Application {
 }
 
 func (app *Application) CloseDBConnection() {
-	CloseDBinstance()
+	CloseDBinstance(app.Mongo)
 }

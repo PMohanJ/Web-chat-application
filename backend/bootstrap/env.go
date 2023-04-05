@@ -8,9 +8,10 @@ import (
 
 type Env struct {
 	Origin            string `mapstructure:"ORIGIN"`
-	ContextTimeout    string `mapstructure:"CONTEXT_TIMEOUT"`
+	ContextTimeout    int    `mapstructure:"CONTEXT_TIMEOUT"`
 	MongoDBURL        string `mapstructure:"MONGODB_URL"`
 	MongoDBURLTesting string `mapstructure:"MONGODB_URL_TESTING"`
+	DatabaseName      string `mapstructure:"DATABASE_NAME"`
 	SecretKey         string `mapstructure:"SECRET_KEY"`
 	Port              string `mapstructure:"PORT"`
 }

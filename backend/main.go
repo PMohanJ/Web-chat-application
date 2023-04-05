@@ -12,9 +12,11 @@ import (
 func main() {
 
 	app := bootstrap.App()
-	defer app.CloseDBConnection()
 
 	env := app.Env
+
+	db := app.Mongo.Database(env.DatabaseName)
+	defer app.CloseDBConnection()
 
 	r := gin.Default()
 
@@ -26,7 +28,8 @@ func main() {
 		MaxAge:       12 * time.Hour,
 	}))
 
-	routes.SetupRoutes(r)
+	timeout := time.Duration(env.ContextTimeout) * time.Second
+	routes.SetupRoutes(r, env, timeout, db)
 
 	r.Run(env.Port)
 }

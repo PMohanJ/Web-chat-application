@@ -5,39 +5,38 @@ import (
 	"log"
 	"time"
 
-	"go.mongodb.org/mongo-driver/mongo"
-	"go.mongodb.org/mongo-driver/mongo/options"
+	"github.com/pmohanj/web-chat-app/mongo"
 )
 
-// Clinet variable holds db instance and is accessable to other files
-var Client *mongo.Client
-
-func DBinstance(MongoDBURL string) *mongo.Client {
-
-	serverAPIOptions := options.ServerAPI(options.ServerAPIVersion1)
-	clientOptions := options.Client().ApplyURI(MongoDBURL).SetServerAPIOptions(serverAPIOptions)
+func DBinstance(MongoDBURL string) mongo.Client {
 
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
 
-	client, err := mongo.Connect(ctx, clientOptions)
+	client, err := mongo.NewClient(MongoDBURL)
 	if err != nil {
+		log.Fatal(err)
+	}
+
+	if err := client.Connect(ctx); err != nil {
+		log.Fatal(err)
+	}
+
+	if err := client.Ping(ctx); err != nil {
 		log.Fatal(err)
 	}
 	log.Println("connected to MongoDB!")
 
-	Client = client
 	return client
 }
 
-func OpenCollection(client *mongo.Client, collectionName string) *mongo.Collection {
-	collection := client.Database("cluster0").Collection(collectionName)
-	return collection
-}
-
-func CloseDBinstance() {
+func CloseDBinstance(client mongo.Client) {
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
 
-	Client.Disconnect(ctx)
+	if err := client.Disconnect(ctx); err != nil {
+		log.Fatal(err)
+	}
+
+	log.Println("Connection to MongoDB is closed")
 }
