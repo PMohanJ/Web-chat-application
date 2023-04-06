@@ -17,10 +17,7 @@ func AddUserRoutes(router *gin.RouterGroup, env *bootstrap.Env, timeout time.Dur
 
 	signUpRoute(userRouter, "/", env, timeout, db)
 	loginRoute(userRouter, "/login", env, timeout, db)
-	/* userRouter.GET("/search", middleware.Authenticate(), user.SearchUsers())
-	userRouter.POST("/", user.RegisterUser())
-	userRouter.POST("/login", user.AuthUser()) */
-
+	searchRoute(userRouter, "/search", env, timeout, db)
 }
 
 func signUpRoute(r *gin.RouterGroup, endPath string, env *bootstrap.Env, timeout time.Duration, db mongo.Database) {
@@ -43,4 +40,14 @@ func loginRoute(r *gin.RouterGroup, endPath string, env *bootstrap.Env, timeout 
 	}
 
 	r.POST(endPath, lc.Login)
+}
+
+func searchRoute(r *gin.RouterGroup, endPath string, env *bootstrap.Env, timeout time.Duration, db mongo.Database) {
+	ur := repository.NewUserRepository(db, domain.CollectionUser)
+
+	sc := userControllers.SearchController{
+		SearchUseCase: usecase.NewSearchUseCase(ur, timeout),
+	}
+
+	r.GET(endPath, sc.SearchUsers)
 }
