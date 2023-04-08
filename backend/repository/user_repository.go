@@ -43,3 +43,38 @@ func (ur *userRepository) GetByEmail(ctx context.Context, email string) (domain.
 
 	return user, err
 }
+
+func (ur *userRepository) FetchUsers(ctx context.Context, query string) ([]bson.M, error) {
+	collection := ur.database.Collection(ur.collection)
+
+	matchStage := bson.D{
+		{"$match", bson.D{
+			{"$or",
+				bson.A{
+					bson.D{{Key: "name", Value: primitive.Regex{Pattern: query}}},
+					bson.D{{Key: "email", Value: primitive.Regex{Pattern: query}}},
+				},
+			},
+		}},
+	}
+	projectStage := bson.D{
+		{
+			"$project", bson.D{
+				{Key: "password", Value: 0},
+				{Key: "created_at", Value: 0},
+				{Key: "updated_at", Value: 0},
+			},
+		},
+	}
+	cursor, err := collection.Aggregate(ctx, mongo.MongoPipeline{matchStage, projectStage})
+	if err != nil {
+		return nil, err
+	}
+
+	var users []bson.M
+	if err := cursor.All(ctx, &users); err != nil {
+		return nil, err
+	}
+
+	return users, nil
+}
