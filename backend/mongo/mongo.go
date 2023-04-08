@@ -3,6 +3,7 @@ package mongo
 import (
 	"context"
 
+	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
 	"go.mongodb.org/mongo-driver/mongo/readpref"
@@ -23,6 +24,7 @@ type Collection interface {
 	DeleteOne(context.Context, interface{}) (int64, error)
 	DeleteMany(context.Context, interface{}) (int64, error)
 	Aggregate(context.Context, interface{}) (Cursor, error)
+	Drop(context.Context) error
 }
 
 type SingleResult interface {
@@ -62,6 +64,8 @@ type mongoCursor struct {
 type mongoSingleResult struct {
 	sr *mongo.SingleResult
 }
+
+type MongoPipeline []bson.D
 
 func NewClient(connection string) (Client, error) {
 
@@ -142,6 +146,10 @@ func (mcl *mongoCollection) DeleteMany(ctx context.Context, filter interface{}) 
 func (mcl *mongoCollection) Aggregate(ctx context.Context, pipeline interface{}) (Cursor, error) {
 	cursor, err := mcl.coll.Aggregate(ctx, pipeline)
 	return &mongoCursor{cur: cursor}, err
+}
+
+func (mcl *mongoCollection) Drop(ctx context.Context) error {
+	return mcl.Drop(ctx)
 }
 
 func (mc *mongoCursor) All(ctx context.Context, result interface{}) error {
