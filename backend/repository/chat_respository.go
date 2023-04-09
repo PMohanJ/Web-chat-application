@@ -87,3 +87,24 @@ func (cr *chatRepository) FetchByFilter(ctx context.Context, filter primitive.D)
 
 	return chat, nil
 }
+
+func (cr *chatRepository) FetchWithLatestMessage(ctx context.Context, filter primitive.D) ([]bson.M, error) {
+	collection := cr.database.Collection(cr.collection)
+
+	lookupStage := LookUpStage("user", "users", "_id", "users")
+	lookupStageLatestMessage := LookUpStage("message", "latestMessage", "_id", "latestMessage")
+	projectStage := ProjectStage("users.password", "created_at",
+		"updated_at", "users.created_at", "users.updated_at")
+
+	cursor, err := collection.Aggregate(ctx, mongo.MongoPipeline{filter, lookupStage, lookupStageLatestMessage, projectStage})
+	if err != nil {
+		return nil, err
+	}
+
+	var chats []bson.M
+	if err := cursor.All(ctx, &chats); err != nil {
+		return nil, err
+	}
+
+	return chats, nil
+}

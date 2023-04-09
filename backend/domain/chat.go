@@ -27,4 +27,16 @@ type ChatRepository interface {
 	FetchById(context.Context, primitive.ObjectID) ([]bson.M, error)
 	FindByFilter(context.Context, interface{}) error
 	FetchByFilter(context.Context, primitive.D) ([]bson.M, error)
+	FetchWithLatestMessage(context.Context, primitive.D) ([]bson.M, error)
+}
+
+type CreateChatUseCase interface {
+	Create(context.Context, Chat) (primitive.ObjectID, error)
+	FetchById(context.Context, primitive.ObjectID) ([]bson.M, error)
+	FindByFilter(context.Context, interface{}) error
+	FetchByFilter(context.Context, primitive.D) ([]bson.M, error)
+}
+
+type UserChatsUseCase interface {
+	FetchWithLatestMessage(context.Context, primitive.D) ([]bson.M, error)
 }

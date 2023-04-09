@@ -14,7 +14,7 @@ type createChatUseCase struct {
 	contextTimeout time.Duration
 }
 
-func NewCreateChatUseCase(chatRepository domain.ChatRepository, timeout time.Duration) domain.ChatRepository {
+func NewCreateChatUseCase(chatRepository domain.ChatRepository, timeout time.Duration) domain.CreateChatUseCase {
 	return &createChatUseCase{
 		chatRepository: chatRepository,
 		contextTimeout: timeout,

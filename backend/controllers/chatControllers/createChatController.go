@@ -13,7 +13,7 @@ import (
 )
 
 type CreateChatController struct {
-	CreateChatUsecase domain.ChatRepository
+	CreateChatUsecase domain.CreateChatUseCase
 }
 
 func (cc *CreateChatController) CreateChat(c *gin.Context) {
