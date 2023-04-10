@@ -69,3 +69,9 @@ type RemoveUserFromGroupUseCase interface {
 	UpdateById(context.Context, primitive.D, primitive.D) error
 	FetchById(context.Context, primitive.ObjectID) ([]bson.M, error)
 }
+
+type UserExitGroupUseCase interface {
+	FetchById(context.Context, primitive.ObjectID) ([]bson.M, error)
+	DeleteById(context.Context, primitive.ObjectID) error
+	UpdateById(context.Context, primitive.D, primitive.D) error
+}
