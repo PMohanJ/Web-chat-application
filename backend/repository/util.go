@@ -40,7 +40,3 @@ func ProjectStage(field1, field2, field3, field4, field5 string) bson.D {
 		},
 	}
 }
-
-func GetDefaultGroupPic() string {
-	return "http://res.cloudinary.com/dkqc4za4f/image/upload/v1677908252/rf8wxtbrrxy61rvsa5hk.png"
-}

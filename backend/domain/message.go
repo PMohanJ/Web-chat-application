@@ -36,3 +36,8 @@ type SendMessageUseCase interface {
 type GetMessagesUseCase interface {
 	FetchById(context.Context, primitive.ObjectID) ([]bson.M, error)
 }
+
+type EditMessageUseCase interface {
+	UpdateById(context.Context, primitive.D, primitive.D) error
+	FetchById(context.Context, primitive.ObjectID) ([]bson.M, error)
+}
