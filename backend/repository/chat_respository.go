@@ -108,3 +108,16 @@ func (cr *chatRepository) FetchWithLatestMessage(ctx context.Context, filter pri
 
 	return chats, nil
 }
+
+func (cr *chatRepository) DeleteById(ctx context.Context, id primitive.ObjectID) error {
+	collection := cr.database.Collection(cr.collection)
+
+	filter := MatchStageBySingleField("_id", id)
+
+	_, err := collection.DeleteOne(ctx, filter)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}

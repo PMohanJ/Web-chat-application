@@ -28,6 +28,7 @@ type ChatRepository interface {
 	FindByFilter(context.Context, interface{}) error
 	FetchByFilter(context.Context, primitive.D) ([]bson.M, error)
 	FetchWithLatestMessage(context.Context, primitive.D) ([]bson.M, error)
+	DeleteById(context.Context, primitive.ObjectID) error
 }
 
 type CreateChatUseCase interface {
@@ -39,4 +40,8 @@ type CreateChatUseCase interface {
 
 type UserChatsUseCase interface {
 	FetchWithLatestMessage(context.Context, primitive.D) ([]bson.M, error)
+}
+
+type DeleteChatUseCase interface {
+	DeleteById(context.Context, primitive.ObjectID) error
 }

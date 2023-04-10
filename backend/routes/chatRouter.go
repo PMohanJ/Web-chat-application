@@ -17,6 +17,7 @@ func AddChatRoutes(r *gin.RouterGroup, env *bootstrap.Env, timeout time.Duration
 
 	createChatRoute(chatRouter, "/", env, timeout, db)
 	getUserChatsRoute(chatRouter, "/", env, timeout, db)
+	deleteUserChatRoute(chatRouter, "/:chatId", env, timeout, db)
 	/* chatRouter := r.Group("/chat")
 	chatRouter.DELETE("/:chatId", middleware.Authenticate(), chat.DeleteUserConversation())
 	chatRouter.POST("/group", middleware.Authenticate(), chat.CreateGroupChat())
@@ -44,4 +45,14 @@ func getUserChatsRoute(r *gin.RouterGroup, endPath string, env *bootstrap.Env, t
 	}
 
 	r.GET(endPath, uc.GetUserChats)
+}
+
+func deleteUserChatRoute(r *gin.RouterGroup, endPath string, env *bootstrap.Env, timeout time.Duration, db mongo.Database) {
+	cr := repository.NewChatRepository(db, domain.CollectionChat)
+
+	dc := &chatControllers.DeleteChatController{
+		DeleteChatUseCase: usecase.NewDeleteChatUseCase(cr, timeout),
+	}
+
+	r.DELETE(endPath, dc.DeleteUserChat)
 }
