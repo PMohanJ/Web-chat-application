@@ -22,6 +22,10 @@ type Chat struct {
 	Updated_at    time.Time            `json:"updated_at" bson:"updated_at"`
 }
 
+func GetDefaultGroupPic() string {
+	return "http://res.cloudinary.com/dkqc4za4f/image/upload/v1677908252/rf8wxtbrrxy61rvsa5hk.png"
+}
+
 type ChatRepository interface {
 	Create(context.Context, Chat) (primitive.ObjectID, error)
 	FetchById(context.Context, primitive.ObjectID) ([]bson.M, error)
@@ -44,4 +48,9 @@ type UserChatsUseCase interface {
 
 type DeleteChatUseCase interface {
 	DeleteById(context.Context, primitive.ObjectID) error
+}
+
+type GroupChatUseCase interface {
+	Create(context.Context, Chat) (primitive.ObjectID, error)
+	FetchById(context.Context, primitive.ObjectID) ([]bson.M, error)
 }

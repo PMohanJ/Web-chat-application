@@ -4,6 +4,7 @@ import (
 	"context"
 	"time"
 
+	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
@@ -24,6 +25,7 @@ type User struct {
 type UserRepository interface {
 	Create(context.Context, User) (primitive.ObjectID, error)
 	GetByEmail(context.Context, string) (User, error)
+	FetchUsers(context.Context, string) ([]bson.M, error)
 }
 
 func (u *User) SetDefaultPic() {

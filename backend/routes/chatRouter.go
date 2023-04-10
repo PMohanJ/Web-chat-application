@@ -18,13 +18,12 @@ func AddChatRoutes(r *gin.RouterGroup, env *bootstrap.Env, timeout time.Duration
 	createChatRoute(chatRouter, "/", env, timeout, db)
 	getUserChatsRoute(chatRouter, "/", env, timeout, db)
 	deleteUserChatRoute(chatRouter, "/:chatId", env, timeout, db)
-	/* chatRouter := r.Group("/chat")
-	chatRouter.DELETE("/:chatId", middleware.Authenticate(), chat.DeleteUserConversation())
-	chatRouter.POST("/group", middleware.Authenticate(), chat.CreateGroupChat())
-	chatRouter.PUT("/grouprename", middleware.Authenticate(), chat.RenameGroupChatName())
-	chatRouter.PUT("/groupadd", middleware.Authenticate(), chat.AddUserToGroupChat())
-	chatRouter.PUT("/groupremove", middleware.Authenticate(), chat.DeleteUserFromGroupChat())
-	chatRouter.PUT("/groupexit", middleware.Authenticate(), chat.UserExitGroup()) */
+	createGroupChatRoute(chatRouter, "/group", env, timeout, db)
+	/*
+		chatRouter.PUT("/grouprename", middleware.Authenticate(), chat.RenameGroupChatName())
+		chatRouter.PUT("/groupadd", middleware.Authenticate(), chat.AddUserToGroupChat())
+		chatRouter.PUT("/groupremove", middleware.Authenticate(), chat.DeleteUserFromGroupChat())
+		chatRouter.PUT("/groupexit", middleware.Authenticate(), chat.UserExitGroup()) */
 }
 
 func createChatRoute(r *gin.RouterGroup, endPath string, env *bootstrap.Env, timeout time.Duration, db mongo.Database) {
@@ -55,4 +54,14 @@ func deleteUserChatRoute(r *gin.RouterGroup, endPath string, env *bootstrap.Env,
 	}
 
 	r.DELETE(endPath, dc.DeleteUserChat)
+}
+
+func createGroupChatRoute(r *gin.RouterGroup, endPath string, env *bootstrap.Env, timeout time.Duration, db mongo.Database) {
+	cr := repository.NewChatRepository(db, domain.CollectionChat)
+
+	dc := &chatControllers.GroupChatController{
+		GroupChatUseCase: usecase.NewGroupChatUseCase(cr, timeout),
+	}
+
+	r.POST(endPath, dc.CreateGroupChat)
 }
