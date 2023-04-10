@@ -15,6 +15,7 @@ import (
 func AddMessageRoutes(r *gin.RouterGroup, env *bootstrap.Env, timeout time.Duration, db mongo.Database) {
 	messageRouter := r.Group("/message")
 	sendMessageRoute(messageRouter, "/", env, timeout, db)
+	getMessagesRoute(messageRouter, "/:chatId", env, timeout, db)
 	/*
 			messageRouter.POST("/", middleware.Authenticate(), message.SendMessage())
 			messageRouter.GET("/:chatId", middleware.Authenticate(), message.GetMessages())
@@ -33,4 +34,14 @@ func sendMessageRoute(r *gin.RouterGroup, endPath string, env *bootstrap.Env, ti
 	}
 
 	r.POST(endPath, sm.SendMessage)
+}
+
+func getMessagesRoute(r *gin.RouterGroup, endPath string, env *bootstrap.Env, timeout time.Duration, db mongo.Database) {
+	mr := repository.NewMessageRepository(db, domain.ColelctionMessage)
+
+	gm := &message.GetMessagesController{
+		GetMessagesUseCase: usecase.NewGetMessagesUseCase(mr, timeout),
+	}
+
+	r.GET(endPath, gm.GetMessages)
 }
