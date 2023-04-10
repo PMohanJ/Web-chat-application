@@ -13,8 +13,8 @@ func SetupRoutes(gin *gin.Engine, env *bootstrap.Env, timeout time.Duration, db 
 	api := gin.Group("/api")
 
 	AddUserRoutes(api, env, timeout, db)
-	//AddChatRoutes(api)
-	//AddMessageRoutes(api)
+	AddChatRoutes(api, env, timeout, db)
+	AddMessageRoutes(api, env, timeout, db)
 
 	// create websocketserver
 	websocket := websocket.CreateWebSocketsServer()

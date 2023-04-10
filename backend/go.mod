@@ -8,7 +8,6 @@ require (
 	github.com/go-playground/assert/v2 v2.0.1
 	github.com/golang-jwt/jwt/v4 v4.4.3
 	github.com/gorilla/websocket v1.5.0
-	github.com/joho/godotenv v1.4.0
 	github.com/spf13/viper v1.15.0
 	go.mongodb.org/mongo-driver v1.11.0
 	golang.org/x/crypto v0.0.0-20220622213112-05595931fe9d

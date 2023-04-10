@@ -14,13 +14,13 @@ import (
 
 // Authenticate acts as authorization middleware that receives the client request
 // and performs validation of the provided token
-func Authenticate() gin.HandlerFunc {
+func Authenticate(secret string) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		header := c.GetHeader("Authorization")
 		strings := strings.Split(header, " ")
 		if len(strings) == 2 {
 			authToken := strings[1]
-			claims, err := helpers.ValidateToken(authToken)
+			claims, err := helpers.ValidateToken(authToken, secret)
 			if err != nil {
 				if errors.Is(err, jwt.ErrTokenMalformed) {
 					c.JSON(http.StatusUnauthorized, gin.H{"error": "Token malformed"})
