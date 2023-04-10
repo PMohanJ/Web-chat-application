@@ -59,3 +59,8 @@ type GroupChatUseCase interface {
 type RenameGroupChatUseCase interface {
 	UpdateById(context.Context, primitive.D, primitive.D) error
 }
+
+type AddUserToGroupChatUseCase interface {
+	UpdateById(context.Context, primitive.D, primitive.D) error
+	FetchById(context.Context, primitive.ObjectID) ([]bson.M, error)
+}

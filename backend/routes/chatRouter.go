@@ -20,8 +20,8 @@ func AddChatRoutes(r *gin.RouterGroup, env *bootstrap.Env, timeout time.Duration
 	deleteUserChatRoute(chatRouter, "/:chatId", env, timeout, db)
 	createGroupChatRoute(chatRouter, "/group", env, timeout, db)
 	renameGroupChatRoute(chatRouter, "/grouprename", env, timeout, db)
+	addUserToGroupChatRoute(chatRouter, "/groupadd", env, timeout, db)
 	/*
-		chatRouter.PUT("/grouprename", middleware.Authenticate(), chat.RenameGroupChatName())
 		chatRouter.PUT("/groupadd", middleware.Authenticate(), chat.AddUserToGroupChat())
 		chatRouter.PUT("/groupremove", middleware.Authenticate(), chat.DeleteUserFromGroupChat())
 		chatRouter.PUT("/groupexit", middleware.Authenticate(), chat.UserExitGroup()) */
@@ -73,5 +73,16 @@ func renameGroupChatRoute(r *gin.RouterGroup, endPath string, env *bootstrap.Env
 	rc := &chatControllers.RenameGroupChatController{
 		RenameGroupChatUseCase: usecase.NewRenameGroupChatUseCase(cr, timeout),
 	}
+
 	r.PUT(endPath, rc.RenameGroupChat)
+}
+
+func addUserToGroupChatRoute(r *gin.RouterGroup, endPath string, env *bootstrap.Env, timeout time.Duration, db mongo.Database) {
+	cr := repository.NewChatRepository(db, domain.CollectionChat)
+
+	aug := &chatControllers.AddUserToGroupChatController{
+		AddUserToGroupChatUseCase: usecase.NewAddUserToGroupChatUseCase(cr, timeout),
+	}
+
+	r.PUT(endPath, aug.AddUserToGroupChat)
 }
