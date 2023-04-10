@@ -10,11 +10,11 @@ import (
 	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
-type RenameGroupChatController struct {
-	RenameGroupChatUseCase domain.RenameGroupChatUseCase
+type RemoveUserFromGroupController struct {
+	RemoveUserFromGroupUseCase domain.RemoveUserFromGroupUseCase
 }
 
-func (rgc *RenameGroupChatController) RenameGroupChat(c *gin.Context) {
+func (rug *RemoveUserFromGroupController) RemoveUserFromGroup(c *gin.Context) {
 	var reqData map[string]interface{}
 
 	if err := c.BindJSON(&reqData); err != nil {
@@ -22,7 +22,7 @@ func (rgc *RenameGroupChatController) RenameGroupChat(c *gin.Context) {
 		log.Panic(err)
 	}
 
-	groupName := reqData["groupName"].(string)
+	uId := reqData["userId"].(string)
 	cId := reqData["chatId"].(string)
 
 	chatId, err := primitive.ObjectIDFromHex(cId)
@@ -30,15 +30,25 @@ func (rgc *RenameGroupChatController) RenameGroupChat(c *gin.Context) {
 		log.Panic(err)
 	}
 
+	userId, err := primitive.ObjectIDFromHex(uId)
+	if err != nil {
+		log.Panic(err)
+	}
+
 	filter := bson.D{{"_id", chatId}}
 
-	update := bson.D{{"$set", bson.D{{"chatName", groupName}}}}
+	update := bson.D{{"$pull", bson.D{{"users", userId}}}}
 
-	err = rgc.RenameGroupChatUseCase.UpdateById(c, filter, update)
+	err = rug.RemoveUserFromGroupUseCase.UpdateById(c, filter, update)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, domain.ErrorResponse{Message: "error while updating data"})
 		log.Panic(err)
 	}
 
-	c.JSON(http.StatusOK, gin.H{"updatedGroupName": groupName})
+	updatedChat, err := rug.RemoveUserFromGroupUseCase.FetchById(c, chatId)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, domain.ErrorResponse{Message: "error while updating data"})
+		log.Panic(err)
+	}
+	c.JSON(http.StatusOK, updatedChat[0])
 }
