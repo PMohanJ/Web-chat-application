@@ -17,10 +17,7 @@ func AddMessageRoutes(r *gin.RouterGroup, env *bootstrap.Env, timeout time.Durat
 	sendMessageRoute(messageRouter, "/", env, timeout, db)
 	getMessagesRoute(messageRouter, "/:chatId", env, timeout, db)
 	editMessageRoute(messageRouter, "/", env, timeout, db)
-	/*
-		messageRouter.DELETE("/:messageId", middleware.Authenticate(), message.DeleteUserMessage())
-		}
-	*/
+	deleteMessageRoute(messageRouter, "/:messageId", env, timeout, db)
 }
 
 func sendMessageRoute(r *gin.RouterGroup, endPath string, env *bootstrap.Env, timeout time.Duration, db mongo.Database) {
@@ -52,4 +49,14 @@ func editMessageRoute(r *gin.RouterGroup, endPath string, env *bootstrap.Env, ti
 	}
 
 	r.PUT(endPath, em.EditMessage)
+}
+
+func deleteMessageRoute(r *gin.RouterGroup, endPath string, env *bootstrap.Env, timeout time.Duration, db mongo.Database) {
+	mr := repository.NewMessageRepository(db, domain.ColelctionMessage)
+
+	em := &message.DeleteMessageController{
+		DeleteMessageUseCase: usecase.NewDeleteMessageUseCase(mr, timeout),
+	}
+
+	r.PUT(endPath, em.DeleteMessage)
 }
