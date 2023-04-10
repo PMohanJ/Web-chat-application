@@ -33,6 +33,7 @@ type ChatRepository interface {
 	FetchByFilter(context.Context, primitive.D) ([]bson.M, error)
 	FetchWithLatestMessage(context.Context, primitive.D) ([]bson.M, error)
 	DeleteById(context.Context, primitive.ObjectID) error
+	UpdateById(context.Context, primitive.D, primitive.D) error
 }
 
 type CreateChatUseCase interface {
@@ -53,4 +54,8 @@ type DeleteChatUseCase interface {
 type GroupChatUseCase interface {
 	Create(context.Context, Chat) (primitive.ObjectID, error)
 	FetchById(context.Context, primitive.ObjectID) ([]bson.M, error)
+}
+
+type RenameGroupChatUseCase interface {
+	UpdateById(context.Context, primitive.D, primitive.D) error
 }

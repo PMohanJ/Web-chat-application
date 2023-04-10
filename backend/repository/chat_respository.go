@@ -121,3 +121,14 @@ func (cr *chatRepository) DeleteById(ctx context.Context, id primitive.ObjectID)
 
 	return nil
 }
+
+func (cr *chatRepository) UpdateById(ctx context.Context, filter primitive.D, update primitive.D) error {
+	collection := cr.database.Collection(cr.collection)
+
+	_, err := collection.UpdateOne(ctx, filter, update)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
