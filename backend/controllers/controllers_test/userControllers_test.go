@@ -6,7 +6,6 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"log"
 	"net/http"
 	"net/http/httptest"
 	"os"
@@ -15,9 +14,9 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/go-playground/assert/v2"
-	"github.com/joho/godotenv"
 	"github.com/pmohanj/web-chat-app/bootstrap"
-	"github.com/pmohanj/web-chat-app/models"
+	"github.com/pmohanj/web-chat-app/domain"
+	"github.com/pmohanj/web-chat-app/mongo"
 	"github.com/pmohanj/web-chat-app/routes"
 )
 
@@ -32,32 +31,25 @@ var messageIdDelete string
 var messageIdEdit string
 
 func TestMain(m *testing.M) {
+	app := bootstrap.App()
+	env := app.Env
+
+	db := app.Mongo.Database(env.DatabaseName)
+	defer app.CloseDBConnection()
+
 	router = gin.Default()
-
-	err := godotenv.Load("./../../.env")
-	if err != nil {
-		log.Fatal("Error loading env variables ", err)
-	}
-	MongoDBURL := os.Getenv("MONGODB_URL_TESTING")
-	// Initiate Databse
-	bootstrap.DBinstance(MongoDBURL)
-
-	// setup user routes
-	api := router.Group("/api")
-	routes.AddUserRoutes(api)
-	routes.AddMessageRoutes(api)
-	routes.AddChatRoutes(api)
+	timeout := time.Duration(env.ContextTimeout) * time.Second
+	routes.SetupRoutes(router, env, timeout, db)
 
 	status := setupPhase()
 	if status != nil {
-		fmt.Println(err)
-		tearDownPhase()
+		fmt.Println(status)
+		//tearDownPhase(db)
 		os.Exit(1)
 	}
 
 	code := m.Run()
-	tearDownPhase()
-	bootstrap.CloseDBinstance()
+	//tearDownPhase(db)
 	os.Exit(code)
 }
 
@@ -65,6 +57,7 @@ func TestMain(m *testing.M) {
 func setupPhase() error {
 	statusCreateUsers, err := createUsers()
 	if statusCreateUsers != 0 || err != nil {
+		fmt.Println("Code ", statusCreateUsers)
 		return err
 	}
 
@@ -225,14 +218,13 @@ func createGroupChat() (int, error) {
 	return 0, nil
 }
 
-func tearDownPhase() {
+func tearDownPhase(db mongo.Database) {
 	ctx, cancel := context.WithTimeout(context.Background(), time.Second*10)
 	defer cancel()
 
-	chatCollection := bootstrap.OpenCollection(bootstrap.Client, "chat")
-	messageCollection := bootstrap.OpenCollection(bootstrap.Client, "message")
-	userCollection := bootstrap.OpenCollection(bootstrap.Client, "user")
-
+	chatCollection := db.Collection("chat")
+	messageCollection := db.Collection("message")
+	userCollection := db.Collection("user")
 	chatCollection.Drop(ctx)
 	messageCollection.Drop(ctx)
 	userCollection.Drop(ctx)
@@ -286,7 +278,7 @@ func TestAuthUser(t *testing.T) {
 		router.ServeHTTP(response, req)
 
 		// expected response
-		exp_data := models.User{
+		exp_data := domain.User{
 			Name:  "User1",
 			Email: "user1@gmail.com",
 			Pic:   "http://res.cloudinary.com/dkqc4za4f/image/upload/v1670340314/clsfmjxnuzsnidzc59np.jpg",
