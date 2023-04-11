@@ -67,7 +67,7 @@ func (cc *CreateChatController) CreateChat(c *gin.Context) {
 			log.Panic(err)
 		}
 
-		c.JSON(http.StatusOK, chat)
+		c.JSON(http.StatusOK, chat[0])
 		return
 	} else if err != nil && !errors.Is(err, mongo.ErrNoDocuments) {
 		c.JSON(http.StatusInternalServerError, domain.ErrorResponse{Message: "error in the server"})
