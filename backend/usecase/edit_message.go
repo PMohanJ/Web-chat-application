@@ -28,9 +28,9 @@ func (em *editMessageUseCase) UpdateById(c context.Context, filter primitive.D, 
 	return em.messageRepository.UpdateById(ctx, filter, update)
 }
 
-func (em *editMessageUseCase) FetchById(c context.Context, id primitive.ObjectID) ([]bson.M, error) {
+func (em *editMessageUseCase) FetchById(c context.Context, field string, id primitive.ObjectID) ([]bson.M, error) {
 	ctx, cancel := context.WithTimeout(c, em.contextTimeout)
 	defer cancel()
 
-	return em.messageRepository.FetchById(ctx, id)
+	return em.messageRepository.FetchById(ctx, field, id)
 }

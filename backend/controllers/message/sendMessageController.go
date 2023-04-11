@@ -60,7 +60,7 @@ func (sm *SendMessageController) SendMessage(c *gin.Context) {
 	}
 
 	// get the inserted message document, and send it to client
-	document, err := sm.SendMessageUseCase.FetchById(c, insId)
+	document, err := sm.SendMessageUseCase.FetchById(c, "_id", insId)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, domain.ErrorResponse{Message: "error while retrieving data"})
 		log.Panic(err)

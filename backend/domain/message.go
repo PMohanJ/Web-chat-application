@@ -22,7 +22,7 @@ type Message struct {
 
 type MessageRepository interface {
 	Create(context.Context, Message) (primitive.ObjectID, error)
-	FetchById(context.Context, primitive.ObjectID) ([]bson.M, error)
+	FetchById(context.Context, string, primitive.ObjectID) ([]bson.M, error)
 	UpdateById(context.Context, primitive.D, primitive.D) error
 	DeleteById(context.Context, primitive.ObjectID) error
 }
@@ -30,16 +30,16 @@ type MessageRepository interface {
 type SendMessageUseCase interface {
 	Create(context.Context, Message) (primitive.ObjectID, error)
 	UpdateByFilter(context.Context, primitive.D, primitive.D) error
-	FetchById(context.Context, primitive.ObjectID) ([]bson.M, error)
+	FetchById(context.Context, string, primitive.ObjectID) ([]bson.M, error)
 }
 
 type GetMessagesUseCase interface {
-	FetchById(context.Context, primitive.ObjectID) ([]bson.M, error)
+	FetchById(context.Context, string, primitive.ObjectID) ([]bson.M, error)
 }
 
 type EditMessageUseCase interface {
 	UpdateById(context.Context, primitive.D, primitive.D) error
-	FetchById(context.Context, primitive.ObjectID) ([]bson.M, error)
+	FetchById(context.Context, string, primitive.ObjectID) ([]bson.M, error)
 }
 
 type DeleteMessageUseCase interface {

@@ -21,7 +21,7 @@ func (gm *GetMessagesController) GetMessages(c *gin.Context) {
 		log.Panic(err)
 	}
 
-	messages, err := gm.GetMessagesUseCase.FetchById(c, chatId)
+	messages, err := gm.GetMessagesUseCase.FetchById(c, "chat", chatId)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, domain.ErrorResponse{Message: "error while retrieving data"})
 		log.Panic(err)

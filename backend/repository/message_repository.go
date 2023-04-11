@@ -37,10 +37,10 @@ func (mr *messageRepository) Create(ctx context.Context, message domain.Message)
 	return insertedId, nil
 }
 
-func (mr *messageRepository) FetchById(ctx context.Context, id primitive.ObjectID) ([]bson.M, error) {
+func (mr *messageRepository) FetchById(ctx context.Context, field string, id primitive.ObjectID) ([]bson.M, error) {
 	collection := mr.database.Collection(mr.collection)
 
-	matchStage := MatchStageBySingleField("_id", id)
+	matchStage := MatchStageBySingleField(field, id)
 
 	lookupStage := LookUpStage("user", "sender", "_id", "sender")
 

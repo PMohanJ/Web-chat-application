@@ -21,9 +21,9 @@ func NewGetMessagesUseCase(messageRepository domain.MessageRepository, timeout t
 	}
 }
 
-func (gm *getMessagesUseCase) FetchById(c context.Context, id primitive.ObjectID) ([]bson.M, error) {
+func (gm *getMessagesUseCase) FetchById(c context.Context, field string, id primitive.ObjectID) ([]bson.M, error) {
 	ctx, cancel := context.WithTimeout(c, gm.contextTimeout)
 	defer cancel()
 
-	return gm.messageRepository.FetchById(ctx, id)
+	return gm.messageRepository.FetchById(ctx, field, id)
 }

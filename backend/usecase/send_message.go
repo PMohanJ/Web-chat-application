@@ -37,9 +37,9 @@ func (sm *sendMessageUseCase) UpdateByFilter(c context.Context, filter primitive
 	return sm.chatRepository.UpdateById(ctx, filter, update)
 }
 
-func (sm *sendMessageUseCase) FetchById(c context.Context, id primitive.ObjectID) ([]bson.M, error) {
+func (sm *sendMessageUseCase) FetchById(c context.Context, field string, id primitive.ObjectID) ([]bson.M, error) {
 	ctx, cancel := context.WithTimeout(c, sm.contextTimeout)
 	defer cancel()
 
-	return sm.messageRepository.FetchById(ctx, id)
+	return sm.messageRepository.FetchById(ctx, field, id)
 }

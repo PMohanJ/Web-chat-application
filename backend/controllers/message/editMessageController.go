@@ -45,7 +45,7 @@ func (em *EditMessageController) EditMessage(c *gin.Context) {
 		log.Panic(err)
 	}
 
-	editedDocument, err := em.EditMessageUseCase.FetchById(c, messageId)
+	editedDocument, err := em.EditMessageUseCase.FetchById(c, "_id", messageId)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, domain.ErrorResponse{Message: "error while retrieving data"})
 		log.Panic(err)
