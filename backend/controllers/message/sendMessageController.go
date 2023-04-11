@@ -19,7 +19,8 @@ func (sm *SendMessageController) SendMessage(c *gin.Context) {
 
 	if err := c.BindJSON(&reqData); err != nil {
 		c.JSON(http.StatusBadRequest, domain.ErrorResponse{Message: "error while parsing data"})
-		log.Panic(err)
+		log.Println(err)
+		return
 	}
 
 	cId := reqData["chatId"].(string)
