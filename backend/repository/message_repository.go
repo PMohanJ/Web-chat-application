@@ -74,7 +74,7 @@ func (mr *messageRepository) UpdateById(ctx context.Context, filter primitive.D,
 func (mr *messageRepository) DeleteById(ctx context.Context, id primitive.ObjectID) error {
 	collection := mr.database.Collection(mr.collection)
 
-	filter := MatchStageBySingleField("_id", id)
+	filter := bson.M{"_id": id}
 	_, err := collection.DeleteOne(ctx, filter)
 	if err != nil {
 		return err

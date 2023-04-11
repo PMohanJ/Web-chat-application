@@ -134,8 +134,8 @@ func (mcl *mongoCollection) UpdateMany(ctx context.Context, filter interface{}, 
 }
 
 func (mcl *mongoCollection) DeleteOne(ctx context.Context, filter interface{}) (int64, error) {
-	deletedCount, err := mcl.coll.DeleteOne(ctx, filter)
-	return deletedCount.DeletedCount, err
+	deletedResult, err := mcl.coll.DeleteOne(ctx, filter)
+	return deletedResult.DeletedCount, err
 }
 
 func (mcl *mongoCollection) DeleteMany(ctx context.Context, filter interface{}) (int64, error) {
