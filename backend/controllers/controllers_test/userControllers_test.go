@@ -49,7 +49,7 @@ func TestMain(m *testing.M) {
 	}
 
 	code := m.Run()
-	//tearDownPhase(db)
+	tearDownPhase(db)
 	os.Exit(code)
 }
 

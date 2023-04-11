@@ -149,7 +149,7 @@ func (mcl *mongoCollection) Aggregate(ctx context.Context, pipeline interface{})
 }
 
 func (mcl *mongoCollection) Drop(ctx context.Context) error {
-	return mcl.Drop(ctx)
+	return mcl.coll.Drop(ctx)
 }
 
 func (mc *mongoCursor) All(ctx context.Context, result interface{}) error {
