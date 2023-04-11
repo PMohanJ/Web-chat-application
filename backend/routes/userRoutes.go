@@ -7,6 +7,7 @@ import (
 	"github.com/pmohanj/web-chat-app/bootstrap"
 	"github.com/pmohanj/web-chat-app/controllers/userControllers"
 	"github.com/pmohanj/web-chat-app/domain"
+	"github.com/pmohanj/web-chat-app/middleware"
 	"github.com/pmohanj/web-chat-app/mongo"
 	"github.com/pmohanj/web-chat-app/repository"
 	"github.com/pmohanj/web-chat-app/usecase"
@@ -49,5 +50,5 @@ func searchRoute(r *gin.RouterGroup, endPath string, env *bootstrap.Env, timeout
 		SearchUseCase: usecase.NewSearchUseCase(ur, timeout),
 	}
 
-	r.GET(endPath, sc.SearchUsers)
+	r.GET(endPath, middleware.Authenticate(env.SecretKey), sc.SearchUsers)
 }

@@ -7,6 +7,7 @@ import (
 	"github.com/pmohanj/web-chat-app/bootstrap"
 	"github.com/pmohanj/web-chat-app/controllers/message"
 	"github.com/pmohanj/web-chat-app/domain"
+	"github.com/pmohanj/web-chat-app/middleware"
 	"github.com/pmohanj/web-chat-app/mongo"
 	"github.com/pmohanj/web-chat-app/repository"
 	"github.com/pmohanj/web-chat-app/usecase"
@@ -14,6 +15,8 @@ import (
 
 func AddMessageRoutes(r *gin.RouterGroup, env *bootstrap.Env, timeout time.Duration, db mongo.Database) {
 	messageRouter := r.Group("/message")
+	messageRouter.Use(middleware.Authenticate(env.SecretKey))
+
 	sendMessageRoute(messageRouter, "/", env, timeout, db)
 	getMessagesRoute(messageRouter, "/:chatId", env, timeout, db)
 	editMessageRoute(messageRouter, "/", env, timeout, db)
@@ -54,9 +57,9 @@ func editMessageRoute(r *gin.RouterGroup, endPath string, env *bootstrap.Env, ti
 func deleteMessageRoute(r *gin.RouterGroup, endPath string, env *bootstrap.Env, timeout time.Duration, db mongo.Database) {
 	mr := repository.NewMessageRepository(db, domain.ColelctionMessage)
 
-	em := &message.DeleteMessageController{
+	dm := &message.DeleteMessageController{
 		DeleteMessageUseCase: usecase.NewDeleteMessageUseCase(mr, timeout),
 	}
 
-	r.PUT(endPath, em.DeleteMessage)
+	r.DELETE(endPath, dm.DeleteMessage)
 }

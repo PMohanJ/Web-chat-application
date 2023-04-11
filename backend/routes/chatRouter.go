@@ -7,6 +7,7 @@ import (
 	"github.com/pmohanj/web-chat-app/bootstrap"
 	"github.com/pmohanj/web-chat-app/controllers/chatControllers"
 	"github.com/pmohanj/web-chat-app/domain"
+	"github.com/pmohanj/web-chat-app/middleware"
 	"github.com/pmohanj/web-chat-app/mongo"
 	"github.com/pmohanj/web-chat-app/repository"
 	"github.com/pmohanj/web-chat-app/usecase"
@@ -14,6 +15,7 @@ import (
 
 func AddChatRoutes(r *gin.RouterGroup, env *bootstrap.Env, timeout time.Duration, db mongo.Database) {
 	chatRouter := r.Group("/chat")
+	chatRouter.Use(middleware.Authenticate(env.SecretKey))
 
 	createChatRoute(chatRouter, "/", env, timeout, db)
 	getUserChatsRoute(chatRouter, "/", env, timeout, db)
