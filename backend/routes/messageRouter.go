@@ -5,7 +5,7 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/pmohanj/web-chat-app/bootstrap"
-	"github.com/pmohanj/web-chat-app/controllers/message"
+	"github.com/pmohanj/web-chat-app/controllers/messageControllers"
 	"github.com/pmohanj/web-chat-app/domain"
 	"github.com/pmohanj/web-chat-app/middleware"
 	"github.com/pmohanj/web-chat-app/mongo"
@@ -27,7 +27,7 @@ func sendMessageRoute(r *gin.RouterGroup, endPath string, env *bootstrap.Env, ti
 	cr := repository.NewChatRepository(db, domain.CollectionChat)
 	mr := repository.NewMessageRepository(db, domain.ColelctionMessage)
 
-	sm := &message.SendMessageController{
+	sm := &messageControllers.SendMessageController{
 		SendMessageUseCase: usecase.NewSendMessageUseCase(cr, mr, timeout),
 	}
 
@@ -37,7 +37,7 @@ func sendMessageRoute(r *gin.RouterGroup, endPath string, env *bootstrap.Env, ti
 func getMessagesRoute(r *gin.RouterGroup, endPath string, env *bootstrap.Env, timeout time.Duration, db mongo.Database) {
 	mr := repository.NewMessageRepository(db, domain.ColelctionMessage)
 
-	gm := &message.GetMessagesController{
+	gm := &messageControllers.GetMessagesController{
 		GetMessagesUseCase: usecase.NewGetMessagesUseCase(mr, timeout),
 	}
 
@@ -47,7 +47,7 @@ func getMessagesRoute(r *gin.RouterGroup, endPath string, env *bootstrap.Env, ti
 func editMessageRoute(r *gin.RouterGroup, endPath string, env *bootstrap.Env, timeout time.Duration, db mongo.Database) {
 	mr := repository.NewMessageRepository(db, domain.ColelctionMessage)
 
-	em := &message.EditMessageController{
+	em := &messageControllers.EditMessageController{
 		EditMessageUseCase: usecase.NewEditMessageUseCase(mr, timeout),
 	}
 
@@ -57,7 +57,7 @@ func editMessageRoute(r *gin.RouterGroup, endPath string, env *bootstrap.Env, ti
 func deleteMessageRoute(r *gin.RouterGroup, endPath string, env *bootstrap.Env, timeout time.Duration, db mongo.Database) {
 	mr := repository.NewMessageRepository(db, domain.ColelctionMessage)
 
-	dm := &message.DeleteMessageController{
+	dm := &messageControllers.DeleteMessageController{
 		DeleteMessageUseCase: usecase.NewDeleteMessageUseCase(mr, timeout),
 	}
 

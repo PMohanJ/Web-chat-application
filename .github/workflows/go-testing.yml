@@ -30,8 +30,13 @@ jobs:
 
       - name: Install dependencies
         run: go get .
+
       - name: Build 
         run: go build -v ./...
+
+      - name: Copy .env to controllers_test
+        run: cp .env ./controllers/controllers_test
+        
       - name: Test with Go CLI 
         env: 
           MongoDBURL: ${{secrets.MONGODB_URL_TESTING}}
